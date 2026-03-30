@@ -1184,4 +1184,15 @@ for src_path, dst_name in table_map.items():
         copied += 1
 
 print(f"\nConsolidation complete: {copied} files copied with paper-consistent names.")
-print("\nDone! All paper outputs generated.")
+
+# Clean up: remove intermediate files, keep only paper-named outputs
+print("\nCleaning up intermediate files...")
+for folder in ["../output/figures", "../output/tables"]:
+    for f in os.listdir(folder):
+        if f.startswith("figure_") or f.startswith("table_"):
+            continue  # keep paper-named files
+        fpath = os.path.join(folder, f)
+        if os.path.isfile(fpath):
+            os.remove(fpath)
+
+print("Done! All paper outputs generated.")
