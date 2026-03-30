@@ -901,7 +901,7 @@ plt.plot(year, A_tot, "k-o", lw=2, alpha=0.75, label=r"$A_{\texttt{tot},t}$")
 plt.legend(loc=9, bbox_to_anchor=(0.5, -0.12), ncol=4, fontsize=12)
 plt.xlabel("Year", fontsize=12)
 plt.ylabel("", fontsize=12)
-# plt.savefig('../output/figures/fig_USA_Ai_appendix.pdf', bbox_inches='tight')
+plt.savefig("../output/figures/fig_USA_Ai_appendix.pdf", bbox_inches="tight")
 plt.close()
 
 
@@ -1432,7 +1432,7 @@ plt.grid()
 # fig.legend(handles, labels, loc=9, bbox_to_anchor=(0.5, -0.01), ncol=3, fontsize=12)
 
 plt.tight_layout()
-# plt.savefig('../output/figures/fig_calibration_USA.pdf', bbox_inches="tight")
+plt.savefig("../output/figures/fig_calibration_USA.pdf", bbox_inches="tight")
 plt.close()
 
 print(

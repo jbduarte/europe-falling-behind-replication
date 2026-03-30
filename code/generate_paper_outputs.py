@@ -1130,13 +1130,12 @@ figure_map = {
     "fig_2_open_endo.pdf": "figure_6.pdf",
     "fig_test_EUR_endo.pdf": "figure_A4.pdf",
     # Appendix figures
-    "fig_USA_calib_A.pdf": "figure_A1.pdf",
-    "fig_USA_calib_agr_euklems_2023_HP.pdf": "figure_A3a.pdf",
-    "fig_USA_calib_man_euklems_2023_HP.pdf": "figure_A3b.pdf",
-    "fig_USA_calib_trd_euklems_2023_HP.pdf": "figure_A3c.pdf",
-    "fig_USA_calib_bss_euklems_2023_HP.pdf": "figure_A3d.pdf",
-    "fig_USA_calib_fin_euklems_2023_HP.pdf": "figure_A3e.pdf",
-    "fig_USA_calib_nps_euklems_2023_HP.pdf": "figure_A3f.pdf",
+    "fig_USA_Ai_appendix.pdf": "figure_A1.pdf",
+    "fig_calibration_USA.pdf": "figure_A2.pdf",
+    "fig_3.pdf": "figure_4.pdf",
+    "fig_2_ams.pdf": "figure_A3.pdf",
+    "fig_test_EUR_appendix.pdf": "figure_A4.pdf",
+    "fig_test_EUR_2_appendix.pdf": "figure_A5.pdf",
 }
 
 # Table mapping: source path -> paper name

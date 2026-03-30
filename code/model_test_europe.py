@@ -1523,7 +1523,7 @@ ax.set_xlabel("Model")
 plt.grid()
 
 plt.tight_layout()
-#plt.savefig('../output/figures/fig_test_EUR_appendix.pdf', bbox_inches="tight")
+plt.savefig("../output/figures/fig_test_EUR_appendix.pdf", bbox_inches="tight")
 plt.close()
 
 #FIG TEST EUROPE APPENDIX
@@ -1650,7 +1650,7 @@ ax.set_xlabel("Model")
 plt.grid()
 
 plt.tight_layout()
-#plt.savefig('../output/figures/fig_test_EUR_2_appendix.pdf', bbox_inches="tight")
+plt.savefig("../output/figures/fig_test_EUR_2_appendix.pdf", bbox_inches="tight")
 plt.close()
 
 print ('------------------------------------------')
@@ -1712,7 +1712,7 @@ plt.legend(loc='lower right', fontsize=14)
 plt.grid()
 
 plt.tight_layout()
-#plt.savefig('../output/figures/fig_2_ams.pdf', bbox_inches="tight")
+plt.savefig("../output/figures/fig_2_ams.pdf", bbox_inches="tight")
 plt.close()
 
 
