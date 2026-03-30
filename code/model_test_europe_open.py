@@ -274,12 +274,12 @@ class model_country:
 #        impo_c_tot, self.impo_tot = sm.tsa.filters.hpfilter((-1)*data_tot['impo'],100)
 #
 #        'Opennes (exp+imp)/GDP'
-#        exp_imp_c_agr_Y, self.exp_imp_agr_Y = sm.tsa.filters.hpfilter((data_agr['expo'] + (-1)*data_agr['impo'])/data_NX_agg['gdp'],100)
-#        exp_imp_c_man_Y, self.exp_imp_man_Y = sm.tsa.filters.hpfilter((data_man['expo'] + (-1)*data_man['impo'])/data_NX_agg['gdp'],100)
-#        exp_imp_c_trd_Y, self.exp_imp_trd_Y = sm.tsa.filters.hpfilter((data_trd['expo'] + (-1)*data_trd['impo'])/data_NX_agg['gdp'],100)
-#        exp_imp_c_bss_Y, self.exp_imp_bss_Y = sm.tsa.filters.hpfilter((data_bss['expo'] + (-1)*data_bss['impo'])/data_NX_agg['gdp'],100)
-#        exp_imp_c_fin_Y, self.exp_imp_fin_Y = sm.tsa.filters.hpfilter((data_fin['expo'] + (-1)*data_fin['impo'])/data_NX_agg['gdp'],100)
-#        exp_imp_c_nps_Y, self.exp_imp_nps_Y = sm.tsa.filters.hpfilter((data_nps['expo'] + (-1)*data_nps['impo'])/data_NX_agg['gdp'],100)
+        exp_imp_c_agr_Y, self.exp_imp_agr_Y = sm.tsa.filters.hpfilter((data_agr['expo'] + (-1)*data_agr['impo'])/data_NX_agg['gdp'],100)
+        exp_imp_c_man_Y, self.exp_imp_man_Y = sm.tsa.filters.hpfilter((data_man['expo'] + (-1)*data_man['impo'])/data_NX_agg['gdp'],100)
+        exp_imp_c_trd_Y, self.exp_imp_trd_Y = sm.tsa.filters.hpfilter((data_trd['expo'] + (-1)*data_trd['impo'])/data_NX_agg['gdp'],100)
+        exp_imp_c_bss_Y, self.exp_imp_bss_Y = sm.tsa.filters.hpfilter((data_bss['expo'] + (-1)*data_bss['impo'])/data_NX_agg['gdp'],100)
+        exp_imp_c_fin_Y, self.exp_imp_fin_Y = sm.tsa.filters.hpfilter((data_fin['expo'] + (-1)*data_fin['impo'])/data_NX_agg['gdp'],100)
+        exp_imp_c_nps_Y, self.exp_imp_nps_Y = sm.tsa.filters.hpfilter((data_nps['expo'] + (-1)*data_nps['impo'])/data_NX_agg['gdp'],100)
 #        self.exp_imp_ser_Y = self.exp_imp_trd_Y + self.exp_imp_bss_Y + self.exp_imp_fin_Y + self.exp_imp_nps_Y
 #        exp_imp_c_tot_Y, self.exp_imp_tot_Y = sm.tsa.filters.hpfilter((data_tot['expo'] + (-1)*data_tot['impo'])/data_NX_agg['gdp'],100)
 

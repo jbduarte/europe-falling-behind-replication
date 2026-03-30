@@ -27,34 +27,35 @@ for d in ["../output/figures", "../output/tables", "../output/data"]:
 
 scripts = [
     # ── Closed economy ──
-    ("model_calibration_USA.py",              "Step  1/18: Calibrating baseline model (USA)"),
-    ("model_test_europe.py",                  "Step  2/18: Testing model on European economies"),
-    ("counterfactuals.py",                    "Step  3/18: Running counterfactual experiments"),
+    ("model_calibration_USA.py",              "Step  1/19: Calibrating baseline model (USA)"),
+    ("model_test_europe.py",                  "Step  2/19: Testing model on European economies"),
+    ("counterfactuals.py",                    "Step  3/19: Running counterfactual experiments"),
 
     # ── Open economy (exogenous trade) ──
-    ("model_calibration_USA_open.py",         "Step  4/18: Calibrating open economy model (USA)"),
-    ("model_test_europe_open.py",             "Step  5/18: Testing open economy model (Europe)"),
-    ("trade_counterfactuals.py",              "Step  6/18: Running trade counterfactuals"),
+    ("model_calibration_USA_open.py",         "Step  4/19: Calibrating open economy model (USA)"),
+    ("model_test_europe_open.py",             "Step  5/19: Testing open economy model (Europe)"),
+    ("trade_counterfactuals.py",              "Step  6/19: Running trade counterfactuals"),
 
     # ── Open economy (endogenous trade) ──
-    ("model_calibration_USA_endogenous_open.py", "Step  7/18: Calibrating endogenous trade model (USA)"),
-    ("model_test_europe_endogenous_xn.py",       "Step  8/18: Testing endogenous trade model (Europe)"),
-    ("trade_counterfactuals_endogenous.py",      "Step  9/18: Running endogenous trade counterfactuals"),
+    ("model_calibration_USA_endogenous_open.py", "Step  7/19: Calibrating endogenous trade model (USA)"),
+    ("model_test_europe_endogenous_xn.py",       "Step  8/19: Testing endogenous trade model (Europe)"),
+    ("trade_counterfactuals_endogenous.py",      "Step  9/19: Running endogenous trade counterfactuals"),
 
     # ── Reallocation figure (requires Steps 1-3) ──
-    ("generate_fig_reallocation.py",          "Step 10/18: Labor reallocation figure (Figure 4)"),
+    ("generate_fig_reallocation.py",          "Step 10/19: Labor reallocation figure (Figure 4)"),
+    ("generate_fig_opennes.py",               "Step 11/19: Trade openness figure (Figure 5)"),
 
     # ── Standalone analyses ──
-    ("price_specification_comparison.py",     "Step 11/18: Price specification comparison (Table 3)"),
-    ("-m utils.facts",                        "Step 12/18: Generating facts figures (Figure 1)"),
-    ("-m utils.table_1_ss_eu4",              "Step 13/18: Shift-share decomposition (Table 1)"),
-    ("-m utils.cfs",                         "Step 14/18: Counterfactual tables (Table 2, Table A.4, Table A.8)"),
-    ("-m utils.table_ss_eu15_appendix",      "Step 15/18: EU-15 shift-share tables (Tables A.6, A.7)"),
-    ("-m utils.table_ss_core_vs_periphery",  "Step 16/18: Core vs. periphery tables (Tables A.9, A.10)"),
-    ("-m utils.corr_lp_tfp_klems",           "Step 17/18: LP--TFP correlation (Table 4, optional)"),
+    ("price_specification_comparison.py",     "Step 12/19: Price specification comparison (Table 3)"),
+    ("-m utils.facts",                        "Step 13/19: Generating facts figures (Figure 1)"),
+    ("-m utils.table_1_ss_eu4",              "Step 14/19: Shift-share decomposition (Table 1)"),
+    ("-m utils.cfs",                         "Step 15/19: Counterfactual tables (Table 2, Table A.4, Table A.8)"),
+    ("-m utils.table_ss_eu15_appendix",      "Step 16/19: EU-15 shift-share tables (Tables A.6, A.7)"),
+    ("-m utils.table_ss_core_vs_periphery",  "Step 17/19: Core vs. periphery tables (Tables A.9, A.10)"),
+    ("-m utils.corr_lp_tfp_klems",           "Step 18/19: LP--TFP correlation (Table 4, optional)"),
 
     # ── Paper outputs ──
-    ("generate_paper_outputs.py",             "Step 18/18: Generating final paper outputs"),
+    ("generate_paper_outputs.py",             "Step 19/19: Generating final paper outputs"),
 ]
 
 print("=" * 70)
