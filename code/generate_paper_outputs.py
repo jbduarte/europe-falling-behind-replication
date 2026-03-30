@@ -1149,6 +1149,7 @@ table_map = {
     "../output/tables/table_3.tex": "table_3.tex",
     "../output/tables/table_3.xlsx": "table_3.xlsx",
     "../output/figures/corr_lp_tfp_klems.tex": "table_4.tex",
+    "../output/figures/corr_lp_tfp_klems.tex": "table_4.tex",
     "../output/data/beta_last_period_results.xlsx": "table_5.xlsx",
     "../output/figures/tab_trade_cf_endo.tex": "table_6.tex",
     "../output/figures/tab_trade_cf_endo.xlsx": "table_6.xlsx",

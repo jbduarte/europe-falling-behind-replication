@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 
-growth_acc_path = '../data/raw/growth accounts.csv'
+growth_acc_path = '../data/raw_data/growth accounts.csv'
 if not os.path.exists(growth_acc_path):
     print(f"  SKIPPED: {growth_acc_path} not found (optional, ~180 MB download).")
     sys.exit(0)
