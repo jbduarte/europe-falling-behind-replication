@@ -9,6 +9,8 @@ Author: Joao B. Duarte
 Last Modified: Feb 2026
 =======================================================================================
 """
+import matplotlib
+matplotlib.use("Agg")
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib import rc
@@ -569,9 +571,9 @@ class model_country:
             A_agr_t=np.array(self.A_agr)[i]
             A_man_t=np.array(self.A_man)[i]
             A_ser_t=np.array(self.A_ser)[i]
-            C_lev_E_ams.append(fsolve(C_exp_ams, L_t))
+            C_lev_E_ams.append(fsolve(C_exp_ams, L_t).item())
         C_level_E_ams = pd.DataFrame(C_lev_E_ams)
-        g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1)
+        g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1).flatten()
         self.C_E_ams = [np.array(self.GDP_ph)[0]/np.array(GDP_ph_USA)[0]]
         for i in range(len(g_C_E_ams) - 1):
             self.C_E_ams.append((1+g_C_E_ams[i+1])*self.C_E_ams[i])
@@ -598,9 +600,9 @@ class model_country:
             A_bss_t=np.array(self.A_bss)[i]
             A_fin_t=np.array(self.A_fin)[i]
             A_nps_t=np.array(self.A_nps)[i]
-            C_lev_E_nps.append(fsolve(C_exp_nps, L_t))
+            C_lev_E_nps.append(fsolve(C_exp_nps, L_t).item())
         C_level_E_nps = pd.DataFrame(C_lev_E_nps)
-        g_C_E_nps = np.array(C_level_E_nps/C_level_E_nps.shift(1) - 1)
+        g_C_E_nps = np.array(C_level_E_nps/C_level_E_nps.shift(1) - 1).flatten()
         self.C_E_nps = [np.array(self.GDP_ph)[0]/np.array(GDP_ph_USA)[0]]
         for i in range(len(g_C_E_nps) - 1):
             self.C_E_nps.append((1+g_C_E_nps[i+1])*self.C_E_nps[i])

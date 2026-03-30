@@ -47,6 +47,8 @@ def construct_dataset_facts(data, smooth=True, country='US'):
     data_agg['sector'] = 'tot'
     data_agg['country'] = country
 
+    # Drop raw 'tot' sector from EUKLEMS to avoid duplicate with computed aggregate
+    data_temp = data_temp[data_temp['sector'] != 'tot']
     data_temp = pd.concat((data_temp, data_agg), axis=0)
 
     data_temp = data_temp.merge(gdp, on=['country', 'year'])
@@ -55,8 +57,10 @@ def construct_dataset_facts(data, smooth=True, country='US'):
     data_temp['output'] = data_temp['ws'] * data_temp['gdp']
 
     data_temp['L_PROD'] = data_temp['VA_Q'] / data_temp['H']
-    grouped = data_temp.groupby(['sector'])
-    data_temp['LS'] = data_temp.groupby(['sector'])['H'].transform(lambda x: x / grouped['H'].get_group('tot').values)
+    tot_hours = data_temp.loc[data_temp['sector'] == 'tot', ['year', 'H']].rename(columns={'H': 'H_tot'})
+    data_temp = data_temp.merge(tot_hours, on='year', how='left')
+    data_temp['LS'] = data_temp['H'] / data_temp['H_tot']
+    data_temp = data_temp.drop(columns=['H_tot'])
 
     def get_A(x):
         A = np.ones(len(x))

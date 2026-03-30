@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")
 """
 =======================================================================================
 LP--TFP correlation analysis (Table 4).

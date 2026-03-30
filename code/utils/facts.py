@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")
 """
 =======================================================================================
 Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
@@ -70,56 +72,58 @@ gdp['gdp'] = gdp['gdp'] * 1_000_000
 
 markers = ['v', 'o']
 fig, ax = plt.subplots()
+
+# Pre-compute GDP per hour for each country, aligned by year
+gdp_per_hour = {}
+for i, c in enumerate(countries):
+    # Total hours from countries_fulldata, filtered to 'tot' sector
+    tot = countries_fulldata[i].loc[countries_fulldata[i].sector == 'tot', ['year', 'H']].copy()
+    tot = tot.rename(columns={'H': 'H_tot'})
+    # GDP from Penn tables
+    gdp_c = gdp.loc[gdp.country == c, ['year', 'gdp']].copy()
+    # Merge on year to ensure alignment, then filter to 1977-2018
+    merged = gdp_c.merge(tot, on='year', how='inner')
+    merged = merged[(merged.year >= 1977) & (merged.year <= 2018)].sort_values('year')
+    gdp_per_hour[i] = np.log(merged['gdp'].values / merged['H_tot'].values)
+
+# Helper to get sector employment shares aligned to the same years
+def get_ls(i, sector):
+    tot = countries_fulldata[i].loc[countries_fulldata[i].sector == 'tot', ['year']].copy()
+    gdp_c = gdp.loc[gdp.country == countries[i], ['year']].copy()
+    common_years = gdp_c.merge(tot, on='year', how='inner')
+    sec = countries_fulldata[i].loc[countries_fulldata[i].sector == sector, ['year', 'LS']].copy()
+    merged = common_years.merge(sec, on='year', how='inner')
+    merged = merged[(merged.year >= 1977) & (merged.year <= 2018)].sort_values('year')
+    return merged['LS'].values
+
 for i in range(len(countries)):
     if i == 0:
         scatter_us = ax.scatter(
-            np.log(gdp.loc[(gdp.country == countries[i]) & (gdp.year >= 1977) & (gdp.year <= 2018), 'gdp'].values / countries_fulldata[
-                i].loc[(countries_fulldata[i].sector == 'tot'), 'H'].values),
-            countries_fulldata[i].loc[(countries_fulldata[i].sector == 'trd'), 'LS'],
-            color='red',
-            alpha=1,
-            marker=markers[0],
-            s=15)
-    scatter = ax.scatter(np.log(gdp.loc[(gdp.country == countries[i]) & (gdp.year >= 1977) & (gdp.year <= 2018), 'gdp'].values / countries_fulldata[
-        i].loc[(countries_fulldata[i].sector == 'tot'), 'H'].values),
-                         countries_fulldata[i].loc[(countries_fulldata[i].sector == 'trd'), 'LS'],
-                         color='red',
-                         alpha=0.1,
-                         marker=markers[1])
+            gdp_per_hour[i], get_ls(i, 'trd'),
+            color='red', alpha=1, marker=markers[0], s=15)
+    scatter = ax.scatter(
+        gdp_per_hour[i], get_ls(i, 'trd'),
+        color='red', alpha=0.1, marker=markers[1])
 scatter_us.set_label('Wholesale and retail trade: US')
 scatter.set_label('Wholesale and retail trade: EU-15')
 for i in range(len(countries)):
     if i == 0:
         scatter_us = ax.scatter(
-            np.log(gdp.loc[(gdp.country == countries[i]) & (gdp.year >= 1977) & (gdp.year <= 2018), 'gdp'].values / countries_fulldata[
-                i].loc[(countries_fulldata[i].sector == 'tot'), 'H'].values),
-            countries_fulldata[i].loc[(countries_fulldata[i].sector == 'bss'), 'LS'],
-            color='blue',
-            alpha=1,
-            marker=markers[0],
-            s=15)
-    scatter = ax.scatter(np.log(gdp.loc[(gdp.country == countries[i]) & (gdp.year >= 1977) & (gdp.year <= 2018), 'gdp'].values / countries_fulldata[
-        i].loc[(countries_fulldata[i].sector == 'tot'), 'H'].values),
-                         countries_fulldata[i].loc[(countries_fulldata[i].sector == 'bss'), 'LS'],
-                         color='blue',
-                         alpha=0.1)
+            gdp_per_hour[i], get_ls(i, 'bss'),
+            color='blue', alpha=1, marker=markers[0], s=15)
+    scatter = ax.scatter(
+        gdp_per_hour[i], get_ls(i, 'bss'),
+        color='blue', alpha=0.1)
 scatter_us.set_label('Business services: US')
 scatter.set_label('Business services: EU-15')
 for i in range(len(countries)):
     if i == 0:
         scatter_us = ax.scatter(
-            np.log(gdp.loc[(gdp.country == countries[i]) & (gdp.year >= 1977) & (gdp.year <= 2018), 'gdp'].values / countries_fulldata[
-                i].loc[(countries_fulldata[i].sector == 'tot'), 'H'].values),
-            countries_fulldata[i].loc[(countries_fulldata[i].sector == 'fin'), 'LS'],
-            color='purple',
-            alpha=1,
-            marker=markers[0],
-            s=15)
-    scatter = ax.scatter(np.log(gdp.loc[(gdp.country == countries[i]) & (gdp.year >= 1977) & (gdp.year <= 2018), 'gdp'].values / countries_fulldata[
-        i].loc[(countries_fulldata[i].sector == 'tot'), 'H'].values),
-                         countries_fulldata[i].loc[(countries_fulldata[i].sector == 'fin'), 'LS'],
-                         color='purple',
-                         alpha=0.1)
+            gdp_per_hour[i], get_ls(i, 'fin'),
+            color='purple', alpha=1, marker=markers[0], s=15)
+    scatter = ax.scatter(
+        gdp_per_hour[i], get_ls(i, 'fin'),
+        color='purple', alpha=0.1)
 scatter_us.set_label('Financial services: US')
 scatter.set_label('Financial services: EU-15')
 ax.set_ylabel('Share in total employment', fontsize=12)

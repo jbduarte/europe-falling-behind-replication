@@ -9,6 +9,8 @@ Author: Joao B. Duarte
 Last Modified: Feb 2026
 =======================================================================================
 """
+import matplotlib
+matplotlib.use("Agg")
 import numpy as np 
 import matplotlib.pyplot as plt
 from matplotlib import rc
@@ -341,9 +343,9 @@ class model_country:
             A_agr_t=np.array(self.A_agr)[i]
             A_man_t=np.array(self.A_man)[i]
             A_ser_t=np.array(self.A_ser)[i]
-            C_lev_E_ams.append(fsolve(C_exp_ams, L_t))
+            C_lev_E_ams.append(fsolve(C_exp_ams, L_t).item())
         C_level_E_ams = pd.DataFrame(C_lev_E_ams)
-        g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1)
+        g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1).flatten()
         self.C_E_ams = [np.array(self.GDP)[0]/np.array(GDP)[0]]
         for i in range(len(g_C_E_ams) - 1):
             self.C_E_ams.append((1+g_C_E_ams[i+1])*self.C_E_ams[i])
@@ -370,9 +372,9 @@ class model_country:
             A_bss_t=np.array(self.A_bss)[i]
             A_fin_t=np.array(self.A_fin)[i]
             A_nps_t=np.array(self.A_nps)[i]
-            C_lev_E_nps.append(fsolve(C_exp_nps, L_t))
+            C_lev_E_nps.append(fsolve(C_exp_nps, L_t).item())
         C_level_E_nps = pd.DataFrame(C_lev_E_nps)
-        g_C_E_nps = np.array(C_level_E_nps/C_level_E_nps.shift(1) - 1)
+        g_C_E_nps = np.array(C_level_E_nps/C_level_E_nps.shift(1) - 1).flatten()
         self.C_E_nps = [np.array(self.GDP)[0]/np.array(GDP)[0]]
         for i in range(len(g_C_E_nps) - 1):
             self.C_E_nps.append((1+g_C_E_nps[i+1])*self.C_E_nps[i])
@@ -1388,23 +1390,8 @@ plt.tight_layout()
 plt.savefig('../output/figures/fig_2.pdf', bbox_inches="tight")
 plt.close()#
 
-data_cfs = pd.read_excel('../output/figures/Counterfactual_ts.xlsx')
-
-ax = plt.subplot(1,1,1)
-ax.plot(DEU.year, data_cfs['cf3'], 'D--', markersize=6, color='darkgreen', markerfacecolor='lime', markeredgecolor='darkgreen', markevery=7, alpha = 0.95, label = 'CF1: U.S. labor reallocation after 1990')
-ax.plot(DEU.year, data_cfs['cf2'], 'o--', markersize=6, color='darkblue', markerfacecolor='lightskyblue', markeredgecolor='darkblue', markevery=7, alpha = 0.95, label = 'CF2: U.S. sectoral productivity after 1990')
-ax.plot(DEU.year, data_cfs['cf3_init'], 'v--', markersize=6, color='orange', markerfacecolor='orange', markeredgecolor='darkorange', markevery=7, alpha = 0.95, label = 'CF3: No labor reallocation after 1990')
-ax.plot(DEU.year, data_cfs['obs'], 's-', markersize=6, color='darkred', markerfacecolor='lightcoral', markeredgecolor='darkred', markevery=7, alpha=0.95, label = 'Model baseline')
-plt.title('Labor Productivity (Relative to U.S.)', fontsize=16)
-ax.axis([1968, 2021, 0.68, 1.04])
-plt.xticks(fontsize=14)
-plt.yticks([0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1], fontsize=14)
-plt.legend(loc='lower right', fontsize=14)
-plt.grid()
-
-plt.tight_layout()
-plt.savefig('../output/figures/fig_cfs.pdf', bbox_inches="tight")
-plt.close()#
+# NOTE: Figure 3 (counterfactual decomposition) moved to generate_paper_outputs.py
+# because it requires Counterfactual_ts.xlsx produced by counterfactuals.py (Step 3).
 
 '''
 ---------------------------

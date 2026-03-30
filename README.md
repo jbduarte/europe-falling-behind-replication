@@ -26,11 +26,11 @@ All data used in the analysis are included in the `data/` folder. Original sourc
 - **Software**: Python 3.8+ with a LaTeX installation (for figure text rendering via matplotlib)
 - **Packages**: See `requirements.txt`. Install with `pip install -r requirements.txt`
 - **Hardware**: 8 GB RAM recommended; endogenous trade model is computationally intensive
-- **Runtime**: Approximately 3--4 hours total
-  - Closed economy (Steps 1--3): ~10 minutes
-  - Open economy, exogenous trade (Steps 4--6): ~20 minutes
-  - Open economy, endogenous trade (Steps 7--9): ~3 hours
-  - Standalone analyses and output generation (Steps 10--17): ~5 minutes
+- **Runtime**: Approximately 70 minutes total (tested on Apple M-series iMac)
+  - Closed economy (Steps 1--3): ~2 minutes
+  - Open economy, exogenous trade (Steps 4--6): ~2 minutes
+  - Open economy, endogenous trade (Steps 7--9): ~63 minutes (Step 8 dominates)
+  - Standalone analyses and output generation (Steps 10--17): ~1 minute
 - **OS**: Tested on macOS; should work on Linux and Windows
 
 ## Instructions

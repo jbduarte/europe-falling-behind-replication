@@ -23,6 +23,8 @@ Outputs:
 =======================================================================================
 """
 
+import matplotlib
+matplotlib.use("Agg")
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm

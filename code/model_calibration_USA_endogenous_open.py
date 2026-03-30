@@ -10,6 +10,8 @@ Last Modified: Feb 2026
 =======================================================================================
 """
 
+import matplotlib
+matplotlib.use("Agg")
 import pandas as pd
 import numpy as np
 from scipy.optimize import minimize_scalar, root, fsolve

@@ -9,6 +9,8 @@ Author: Joao B. Duarte
 Last Modified: Feb 2026
 =======================================================================================
 """
+import matplotlib
+matplotlib.use("Agg")
 import pandas as pd
 import pickle
 import numpy as np 
@@ -145,9 +147,9 @@ class counterfactual:
 			A_ser_t=np.array(self.cou.A_ser)[i]			
 			def C_exp_ams(C):
 	   			return L_t**(1-sigma) - (self.cou.om_agr_ams*(C**eps_agr)*(A_agr_t**(sigma-1)) + self.cou.om_man_ams*C*(A_man_t**(sigma-1)) + (1-self.cou.om_agr_ams-self.cou.om_man_ams)*(C**eps_ser)*(A_ser_t**(sigma-1)))
-			C_lev_E_ams.append(fsolve(C_exp_ams, L_t)) 
+			C_lev_E_ams.append(fsolve(C_exp_ams, L_t).item()) 
 		C_level_E_ams = pd.DataFrame(C_lev_E_ams)       
-		g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1)
+		g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1).flatten()
 		self.C_E_ams_baseline = [np.array(self.cou.GDP_ph)[0]/np.array(GDP_ph_USA)[0]]
 		for i in range(len(g_C_E_ams) - 1):
 			self.C_E_ams_baseline.append((1+g_C_E_ams[i+1])*self.C_E_ams_baseline[i])
@@ -163,9 +165,9 @@ class counterfactual:
 			A_nps_t=np.array(self.cou.A_nps)[i]
 			def C_exp_nps(C):
 				return L_t**(1-sigma) - (self.cou.om_agr_nps*(C**eps_agr)*(A_agr_t**(sigma-1)) + self.cou.om_man_nps*C*(A_man_t**(sigma-1)) + self.cou.om_trd_nps*(C**eps_trd)*(A_trd_t**(sigma-1)) + self.cou.om_bss_nps*(C**eps_bss)*(A_bss_t**(sigma-1)) + self.cou.om_fin_nps*(C**eps_fin)*(A_fin_t**(sigma-1)) + (1-self.cou.om_agr_nps-self.cou.om_man_nps-self.cou.om_trd_nps-self.cou.om_bss_nps-self.cou.om_fin_nps)*(C**eps_nps)*(A_nps_t**(sigma-1)))
-			C_lev_E_nps.append(fsolve(C_exp_nps, L_t))
+			C_lev_E_nps.append(fsolve(C_exp_nps, L_t).item())
 		C_level_E_nps = pd.DataFrame(C_lev_E_nps)
-		g_C_E_nps = np.array(C_level_E_nps/C_level_E_nps.shift(1) - 1)
+		g_C_E_nps = np.array(C_level_E_nps/C_level_E_nps.shift(1) - 1).flatten()
 		self.C_E_nps_baseline = [np.array(self.cou.GDP_ph)[0]/np.array(GDP_ph_USA)[0]]
 		for i in range(len(g_C_E_nps) - 1):
 			self.C_E_nps_baseline.append((1+g_C_E_nps[i+1])*self.C_E_nps_baseline[i])

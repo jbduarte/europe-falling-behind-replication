@@ -10,6 +10,8 @@ Last Modified: Feb 2026
 =======================================================================================
 """
 
+import matplotlib
+matplotlib.use("Agg")
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc

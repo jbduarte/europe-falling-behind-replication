@@ -72,9 +72,13 @@ for i, (script, desc) in enumerate(scripts):
         result = subprocess.run([sys.executable, script])
     elapsed = time.time() - t0
     if result.returncode != 0:
-        print(f"\n  ERROR: {script} failed (exit code {result.returncode})")
-        print(f"  Aborting replication.")
-        sys.exit(1)
+        # Steps 11 and 16 are optional (facts figures and LP-TFP correlation)
+        if script in ("-m utils.facts", "-m utils.corr_lp_tfp_klems"):
+            print(f"\n  WARNING: {script} failed (exit code {result.returncode}). Continuing.")
+        else:
+            print(f"\n  ERROR: {script} failed (exit code {result.returncode})")
+            print(f"  Aborting replication.")
+            sys.exit(1)
     print(f"  Completed in {elapsed:.1f}s")
 
 total_elapsed = time.time() - total_start

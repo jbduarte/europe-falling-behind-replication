@@ -985,7 +985,7 @@ def compute_trade_openness(io_data, agg_data, country):
     """Compute (Exports + |Imports|)/GDP by sector, HP-filtered."""
     openness = {}
     for sec in sectors_io:
-        sec_data = io_data.loc[country].loc[io_data.loc[country, "sector"] == sec]
+        sec_data = io_data.loc[country].loc[io_data.loc[country, "sec"] == sec]
         gdp = agg_data.loc[country, "gdp"]
         # impo is stored as negative, so (-1)*impo = |imports|
         raw = (sec_data["expo"].values + (-1) * sec_data["impo"].values) / gdp.values
@@ -994,17 +994,17 @@ def compute_trade_openness(io_data, agg_data, country):
 
 
 try:
-    us_openness = compute_trade_openness(io_data, agg_data, "US")
+    us_openness = compute_trade_openness(io_data, agg_data, "USA")
 
     # EUR4: hours-weighted average of trade openness
-    eur4_countries_io = {"DE": DEU, "FR": FRA, "GB": GBR, "IT": ITA}
+    eur4_countries_io = {"DEU": DEU, "FRA": FRA, "GBR": GBR, "ITA": ITA}
     eur4_openness = {}
     for sec in sectors_io:
         weighted = None
         total_h = None
         for c_code, c_obj in eur4_countries_io.items():
             c_data = io_data.loc[c_code]
-            c_data = c_data.loc[c_data["sector"] == sec]
+            c_data = c_data.loc[c_data["sec"] == sec]
             gdp_c = agg_data.loc[c_code, "gdp"]
             raw = (c_data["expo"].values + (-1) * c_data["impo"].values) / gdp_c.values
             _, hp = sm.tsa.filters.hpfilter(raw, 100)
@@ -1083,6 +1083,34 @@ except Exception as e:
 
 
 # ==============================================================================
+# FIGURE 3: Counterfactual decomposition of productivity gap
+# (Requires Counterfactual_ts.xlsx from Step 3)
+# ==============================================================================
+print("\nGenerating Figure 3 (counterfactual decomposition)...")
+try:
+    from model_test_europe import DEU
+    data_cfs = pd.read_excel('../output/figures/Counterfactual_ts.xlsx')
+
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(DEU.year, data_cfs['cf3'], 'D--', markersize=6, color='darkgreen', markerfacecolor='lime', markeredgecolor='darkgreen', markevery=7, alpha=0.95, label='CF1: U.S. labor reallocation after 1990')
+    ax.plot(DEU.year, data_cfs['cf2'], 'o--', markersize=6, color='darkblue', markerfacecolor='lightskyblue', markeredgecolor='darkblue', markevery=7, alpha=0.95, label='CF2: U.S. sectoral productivity after 1990')
+    ax.plot(DEU.year, data_cfs['cf3_init'], 'v--', markersize=6, color='orange', markerfacecolor='orange', markeredgecolor='darkorange', markevery=7, alpha=0.95, label='CF3: No labor reallocation after 1990')
+    ax.plot(DEU.year, data_cfs['obs'], 's-', markersize=6, color='darkred', markerfacecolor='lightcoral', markeredgecolor='darkred', markevery=7, alpha=0.95, label='Model baseline')
+    plt.title('Labor Productivity (Relative to U.S.)', fontsize=16)
+    ax.axis([1968, 2021, 0.68, 1.04])
+    plt.xticks(fontsize=14)
+    plt.yticks([0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1], fontsize=14)
+    plt.legend(loc='lower right', fontsize=14)
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig('../output/figures/fig_cfs.pdf', bbox_inches="tight")
+    plt.close()
+    print("  Saved: output/figures/fig_cfs.pdf")
+except Exception as e:
+    print(f"  WARNING: Could not generate Figure 3: {e}")
+
+
+# ==============================================================================
 # CONSOLIDATION: Copy all outputs to paper-consistent names
 # ==============================================================================
 print("\nConsolidating outputs with paper-consistent naming...")
@@ -1149,7 +1177,7 @@ for src_name, dst_name in figure_map.items():
 # Copy tables
 for src_path, dst_name in table_map.items():
     dst = os.path.join("../output/tables", dst_name)
-    if os.path.exists(src_path):
+    if os.path.exists(src_path) and os.path.abspath(src_path) != os.path.abspath(dst):
         shutil.copy2(src_path, dst)
         print(f"  {os.path.basename(src_path)} -> {dst_name}")
         copied += 1
