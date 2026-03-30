@@ -1326,7 +1326,7 @@ handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles, labels, loc=9, bbox_to_anchor=(0.5, 0.02), ncol=4, fontsize=14)
 
 plt.tight_layout()
-#plt.savefig('../output/figures/fig_1.pdf', bbox_inches="tight")
+plt.savefig("../output/figures/fig_1.pdf", bbox_inches="tight")
 plt.close()
 
 

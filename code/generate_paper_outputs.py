@@ -1123,8 +1123,7 @@ os.makedirs("../output/tables", exist_ok=True)
 # Figure mapping: source -> paper name
 figure_map = {
     # Main figures
-    "fig_1a.pdf": "figure_1a.pdf",
-    "fig_1b.pdf": "figure_1b.pdf",
+    "fig_1.pdf": "figure_1.pdf",
     "fig_2.pdf": "figure_2.pdf",
     "fig_cfs.pdf": "figure_3.pdf",
     "fig_2_open_endo.pdf": "figure_6.pdf",
