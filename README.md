@@ -19,7 +19,7 @@ All data used in the analysis are included in the `data/` folder. Original sourc
 | Penn World Table | [PWT 10.01](https://www.rug.nl/ggdc/productivity/pwt/) | GDP levels for initial relative productivity |
 | OECD IO Tables | [OECD](https://www.oecd.org/sti/ind/input-outputtables.htm) | Sectoral trade flows (IO panel) |
 
-**Note**: The TFP correlation analysis (Step 16) requires `growth_accounts.csv` (~180 MB), which is excluded from this repository due to size. Download from [EU KLEMS Growth Accounts](https://euklems-intanprod-llee.luiss.it/) and place in `data/raw/`. Step 16 is automatically skipped if the file is not present.
+**Note**: The TFP correlation analysis (Step 16) requires `growth_accounts.csv` (~180 MB), included in `data/raw_data/`. If cloning from GitHub where this file may be tracked via Git LFS, ensure LFS is installed (`git lfs install`) before cloning.
 
 ## Computational Requirements
 
@@ -141,6 +141,38 @@ Additional intermediate data files are saved in `output/figures/` and `output/da
 - `lp_KLEMS_data.xlsx`: Labor productivity data from KLEMS
 - `beta_last_period_results.xlsx`: Export elasticity parameters
 
+## Raw Data and Data Construction
+
+The `data/raw_data/` folder contains all original source data files. The `code/data_construction/` folder contains the Python (and R) scripts that transform the raw data into the analysis-ready datasets in `data/`.
+
+### Raw Data Sources
+
+| Folder/File | Source | Description |
+|-------------|--------|-------------|
+| `raw_data/EUKLEMS_2023/data_raw.csv` | EU KLEMS 2023 | Sectoral value added, hours, prices (all countries) |
+| `raw_data/EUKLEMS_2009/data_raw.csv` | EU KLEMS 2009 | Historical sectoral data (1970--1995 extension) |
+| `raw_data/growth accounts.csv` | EU KLEMS 2023 Growth Accounts | TFP data for LP--TFP correlation (Table 4) |
+| `raw_data/IO/` | OECD ICIO Tables | Sectoral input-output and trade flow data |
+| `raw_data/OECD_GDP_PPP_NX.csv` | OECD | GDP per hour worked, PPP-adjusted |
+| `raw_data/penn_world_table/` | PWT 10.01 | GDP levels for initial relative productivity |
+| `raw_data/DR2_QJE_data.xls` | Duarte & Restuccia (2010) | Reference data |
+
+### Data Construction Scripts (`code/data_construction/`)
+
+| Script | Description |
+|--------|-------------|
+| `get_EUKLEMS.py` | Download and process EU KLEMS raw data |
+| `get_WorldKLEMS_USA.py` | Process US KLEMS data |
+| `construct_dataset.py` | Build analysis-ready panel from raw KLEMS data |
+| `select_data.py` | Select countries and sectors for the six-sector model |
+| `get_penn_table.py` | Process Penn World Table GDP data |
+| `get_initial_rel_A.py` | Compute initial relative productivity levels |
+| `add_EU15_OECD.py` | Add EU-15 aggregate OECD data |
+| `construct_dataset_facts.py` | Construct dataset for stylized facts (Section 2) |
+| `corr_lp_tfp_klems.py` | LP--TFP correlation (Table 4) |
+
+The data construction pipeline runs: `get_EUKLEMS.py` -> `construct_dataset.py` -> `select_data.py` -> analysis-ready `euklems_2023.csv`. The main analysis scripts (Steps 1--17) use only the processed datasets in `data/`; the raw data and construction scripts are provided for full transparency.
+
 ## Directory Structure
 
 ```
@@ -149,14 +181,20 @@ europe-falling-behind-replication/
 ├── requirements.txt
 ├── LICENSE
 ├── data/
-│   ├── euklems_2023.csv
-│   ├── penn_gdp.xlsx
-│   ├── io_panel.xlsx
-│   ├── exp_imp_aggregate_panel.xlsx
-│   ├── code.xlsx
-│   └── raw/
-│       ├── OECD_GDP_ph.xlsx
-│       └── OECD_GDP_ph_EU15.xlsx
+│   ├── euklems_2023.csv                       # Analysis-ready KLEMS panel
+│   ├── penn_gdp.xlsx                          # Penn World Table GDP
+│   ├── io_panel.xlsx                          # OECD IO panel (trade)
+│   ├── exp_imp_aggregate_panel.xlsx           # Aggregate trade flows
+│   ├── raw/                                   # OECD GDP per hour
+│   │   ├── OECD_GDP_ph.xlsx
+│   │   └── OECD_GDP_ph_EU15.xlsx
+│   └── raw_data/                              # Original source data
+│       ├── EUKLEMS_2023/data_raw.csv          # EU KLEMS 2023 release
+│       ├── EUKLEMS_2009/data_raw.csv          # EU KLEMS 2009 release
+│       ├── growth accounts.csv                # TFP growth accounts (~180 MB)
+│       ├── IO/                                # OECD input-output tables
+│       ├── penn_world_table/                   # PWT 10.01
+│       └── ...                                # Other raw sources
 ├── code/
 │   ├── master.py                              # Master replication script (runs all 17 steps)
 │   ├── model_calibration_USA.py               # Step 1: US closed economy calibration
@@ -170,6 +208,11 @@ europe-falling-behind-replication/
 │   ├── trade_counterfactuals_endogenous.py    # Step 9: Trade counterfactuals (endogenous)
 │   ├── price_specification_comparison.py      # Step 10: Price specification comparison
 │   ├── generate_paper_outputs.py              # Step 17: Final outputs + consolidation
+│   ├── data_construction/                     # Raw data -> analysis-ready transformations
+│   │   ├── get_EUKLEMS.py
+│   │   ├── construct_dataset.py
+│   │   ├── select_data.py
+│   │   └── ...
 │   └── utils/
 │       ├── __init__.py
 │       ├── construct_dataset_facts.py         # Dataset construction for facts

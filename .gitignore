@@ -38,3 +38,5 @@ _fix_paths.py
 
 # Large data files (download separately, see README)
 data/raw/growth_accounts.csv
+data/raw_data/growth accounts.csv
+data/raw_data/growth accounts.rds

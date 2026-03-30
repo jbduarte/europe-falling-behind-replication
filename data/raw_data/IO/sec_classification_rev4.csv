@@ -1,0 +1,47 @@
+﻿sector_code,sector_desc,sec_classification,sec
+TTL_A01_02,"Agriculture, hunting, forestry",agr,agr
+TTL_A03,Fishing and aquaculture,agr,agr
+TTL_B05_06,"Mining and quarrying, energy producing products",man,man
+TTL_B07_08,"Mining and quarrying, non-energy producing products",man,man
+TTL_B09,Mining support service activities,man,man
+TTL_C10T12,"Food products, beverages and tobacco",man,man
+TTL_C13T15,"Textiles, textile products, leather and footwear",man,man
+TTL_C16,Wood and products of wood and cork,man,man
+TTL_C17_18,Paper products and printing,man,man
+TTL_C19,Coke and refined petroleum products,man,man
+TTL_C20,Chemical and chemical products,man,man
+TTL_C21,"Pharmaceuticals, medicinal chemical and botanical products",man,man
+TTL_C22,Rubber and plastics products,man,man
+TTL_C23,Other non-metallic mineral products,man,man
+TTL_C24,Basic metals,man,man
+TTL_C25,Fabricated metal products,man,man
+TTL_C26,"Computer, electronic and optical equipment",man,man
+TTL_C27,Electrical equipment,man,man
+TTL_C28,"Machinery and equipment, nec ",man,man
+TTL_C29,"Motor vehicles, trailers and semi-trailers",man,man
+TTL_C30,Other transport equipment,man,man
+TTL_C31T33,Manufacturing nec; repair and installation of machinery and equipment,man,man
+TTL_D,"Electricity, gas, steam and air conditioning supply",man,man
+TTL_E,"Water supply; sewerage, waste management and remediation activities",man,man
+TTL_F,Construction,man,man
+TTL_G,Wholesale and retail trade; repair of motor vehicles,trd,trd
+TTL_H49,Land transport and transport via pipelines,trs,nps
+TTL_H50,Water transport,trs,nps
+TTL_H51,Air transport,trs,nps
+TTL_H52,Warehousing and support activities for transportation,trs,nps
+TTL_H53,Postal and courier activities,trs,nps
+TTL_I,Accommodation and food service activities,rst,nps
+TTL_J58T60,"Publishing, audiovisual and broadcasting activities",com,nps
+TTL_J61,Telecommunications,com,nps
+TTL_J62_63,IT and other information services,com,nps
+TTL_K,Financial and insurance activities,fin,fin
+TTL_L,Real estate activities,bss,bss
+TTL_M,"Professional, scientific and technical activities",bss,bss
+TTL_N,Administrative and support services,bss,bss
+TTL_O,Public administration and defence; compulsory social security,gov,nps
+TTL_P,Education,edu,nps
+TTL_Q,Human health and social work activities,hlt,nps
+TTL_R,"Arts, entertainment and recreation",per,nps
+TTL_S,Other service activities,per,nps
+TTL_T,Activities of households as employers; undifferentiated goods- and services-producing activities of households for own use,per,nps
+TTL_INT_FNL,Total intermediate and final expenditure at purchasers' prices,tot,tot

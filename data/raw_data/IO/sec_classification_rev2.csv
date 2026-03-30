@@ -1,0 +1,37 @@
+﻿sector_code,sector_desc,sec_classification,sec
+1 ,"Agriculture, forestry & fishing",agr,agr
+2 ,Mining & quarrying,agr,agr
+3 ,"Food, beverages & tobacco",man,man
+4 ,"Textiles, apparel & leather",man,man
+5 ,Wood products & furniture,man,man
+6 ,"Paper, paper products & printing",man,man
+7 ,Industrial chemicals,man,man
+8 ,Drugs & medicines,man,man
+9 ,Petroleum & coal products,man,man
+10 ,Rubber & plastic products,man,man
+11 ,Non-metallic mineral products,man,man
+12 ,Iron & steel,man,man
+13 ,Non-ferrous metals,man,man
+14 ,Metal products,man,man
+15 ,Non-electrical machinery,man,man
+16 ,Office & computing machinery,man,man
+17 ,"Electrical apparatus, nec",man,man
+18 ,"Radio, TV & communication equipment",man,man
+19 ,Shipbuilding & repairing,man,man
+20 ,Other transport,man,man
+21 ,Motor vehicles,man,man
+22 ,Aircraft,man,man
+23 ,Professional goods,man,man
+24 ,Other manufacturing,man,man
+25 ,"Electricity, gas & water",man,man
+26 ,Construction,man,man
+27 ,Wholesale & retail trade,trd,trd
+28 ,Restaurants & hotels,res,nps
+29 ,Transport & storage,trs,nps
+30 ,Communication,com,nps
+31 ,Finance & insurance,fin,fin
+32 ,Real estate & business services,bss,bss
+33 ,"Community, social & personal services",per,nps
+34 ,Producers of government services,gov,nps
+35 ,Other producers,per,nps
+37 ,Total ,tot,tot
