@@ -1150,7 +1150,7 @@ table_map = {
     "../output/tables/table_3.xlsx": "table_3.xlsx",
     "../output/figures/corr_lp_tfp_klems.tex": "table_4.tex",
     "../output/figures/corr_lp_tfp_klems.tex": "table_4.tex",
-    "../output/data/beta_last_period_results.xlsx": "table_5.xlsx",
+    "../data/beta_last_period_results.xlsx": "table_5.xlsx",
     "../output/figures/tab_trade_cf_endo.tex": "table_6.tex",
     "../output/figures/tab_trade_cf_endo.xlsx": "table_6.xlsx",
     # Appendix tables
@@ -1188,10 +1188,15 @@ print(f"\nConsolidation complete: {copied} files copied with paper-consistent na
 
 # Clean up: remove intermediate files, keep only paper-named outputs
 print("\nCleaning up intermediate files...")
+import re
 for folder in ["../output/figures", "../output/tables"]:
     for f in os.listdir(folder):
-        if f.startswith("figure_") or f.startswith("table_"):
-            continue  # keep paper-named files
+        # Keep paper-named files: figure_N, table_N, table_AN
+        if re.match(r'^(figure|table)_[0-9A]', f):
+            continue
+        # Keep data intermediates needed across pipeline runs
+        if f.endswith(".xlsx") or f.endswith(".obj"):
+            continue
         fpath = os.path.join(folder, f)
         if os.path.isfile(fpath):
             os.remove(fpath)
