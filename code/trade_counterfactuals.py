@@ -1,13 +1,26 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
-Filename: trade_counterfactual.py
-Description: This program uses the BDS model with calibrated parameters to establish
-	counterfactual experiments. 
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        trade_counterfactuals.py
+Purpose:     Run open-economy (EXOGENOUS-trade) counterfactual experiments for
+             European economies. Replaces each country's sectoral productivities
+             with counterfactual paths (US growth rates, alternative sector-
+             specific catch-up, etc.) while holding observed net exports fixed,
+             and recomputes aggregate labor productivity.
+Pipeline:    Step 6/19 — Open-economy (exogenous trade) counterfactuals.
+Inputs:      US preference parameters (sigma, eps_*) from model_calibration_USA.py;
+             US open-economy aggregates from model_calibration_USA_open.py;
+             EU country instances and EU4/EU13/core/periphery aggregates from
+             model_test_europe_open.py.
+Outputs:     ../output/figures/Counterfactual_*_trade.xlsx (CF1 AMS/NPS, CF2
+             catch-up AMS/NPS under exogenous trade). Used for the open-economy
+             rows of the counterfactual tables.
+Dependencies: model_calibration_USA.py (Step 1), model_calibration_USA_open.py
+              (Step 4), model_test_europe_open.py (Step 5).
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -20,7 +33,8 @@ from scipy.optimize import minimize_scalar, root, fsolve
 rc('text', usetex=True)
 rc('font', family='serif')
 
-# The following string runs the calibration of the model on the US, and imports the parameter values that are used in this program. Also, it imports US GDP, needed in the European sectoral productivity measurement.
+# Import US preference parameters (Step 1) and US open-economy aggregates
+# (Step 4) used as the benchmark for European counterfactuals.
 from model_calibration_USA import sigma, eps_agr, eps_trd, eps_fin, eps_bss, eps_nps, eps_ser
 from model_calibration_USA_open import GDP_ph, E, A_tot, \
     share_agr, share_man, share_trd, share_bss, share_fin, share_nps, share_ser, \
@@ -32,7 +46,9 @@ from model_calibration_USA_open import GDP_ph, E, A_tot, \
 # Rename US Aggregates
 GDP_ph_USA, E_USA = GDP_ph, E
 
-#The following string runs the measurement of productivity in Europe recovering the initial levels with our model.
+# Import European model_country instances and EU aggregates from Step 5 — they
+# carry open-economy productivity and employment-share series that these
+# counterfactuals perturb.
 from model_test_europe_open import model_country, EUR4_h_tot, EURCORE_h_tot, EURPERI_h_tot,  EUR13_h_tot, EUR4_A_tot, EURCORE_A_tot, EURPERI_A_tot, EUR13_A_tot, EUR4_rel_A_tot, EUR13_rel_A_tot, EUR4_E, EUR13_E, EUR4_rel_E, EUR13_rel_E, \
 	EUR4_share_agr, EUR13_share_agr, EUR4_share_man, EUR13_share_man, EUR4_share_ser, EUR13_share_ser, EUR4_share_trd, EUR13_share_trd, EUR4_share_bss, EUR13_share_bss, EUR4_share_fin, EUR13_share_fin, EUR4_share_nps, EUR13_share_nps, \
 	EUR4_share_agr_ams_m, EUR13_share_agr_ams_m, EUR4_share_agr_nps_m, EUR13_share_agr_nps_m, EUR4_share_man_ams_m, EUR13_share_man_ams_m, EUR4_share_man_nps_m, EUR13_share_man_nps_m, EUR4_share_ser_ams_m, EUR13_share_ser_ams_m, EUR4_share_trd_nps_m, EUR13_share_trd_nps_m, EUR4_share_bss_nps_m, EUR13_share_bss_nps_m, EUR4_share_fin_nps_m, EUR13_share_fin_nps_m, EUR4_share_nps_nps_m, EUR13_share_nps_nps_m, \
@@ -139,17 +155,26 @@ class counterfactual:
 		self.ss_A_base_nps = self.cou.share_agr*self.cou.A_agr + self.cou.share_man*self.cou.A_man + self.cou.share_trd*self.cou.A_trd + self.cou.share_bss*self.cou.A_bss + self.cou.share_fin*self.cou.A_fin + self.cou.share_nps*self.cou.A_nps
 
 		'Baseline computation of C'
+		# Open-economy analogue of the closed-economy C recovery in counterfactuals.py:
+		# solve the labor-market-clearing identity L_t^(1-sigma) = sum_i om_i * C_t^eps_i * A_it^(sigma-1)
+		# for the utility index C_t, year by year. Under EXOGENOUS trade, net exports
+		# enter the share equations additively but do not alter the shape of the C identity,
+		# so we use the same closed-form residual here. fsolve is seeded at L_t (same
+		# order of magnitude as C) and typically converges in fewer than 10 iterations
+		# with scipy's default xtol (~1.5e-8).
 		C_lev_E_ams=[]
-		for i in range(len(self.cou.h_tot)):
+		for i in range(len(self.cou.h_tot)):   # time loop over years (1970-2019)
 			L_t=np.array(self.cou.h_tot)[i]
 			A_agr_t=np.array(self.cou.A_agr)[i]
 			A_man_t=np.array(self.cou.A_man)[i]
-			A_ser_t=np.array(self.cou.A_ser)[i]			
+			A_ser_t=np.array(self.cou.A_ser)[i]
 			def C_exp_ams(C):
 	   			return L_t**(1-sigma) - (self.cou.om_agr_ams*(C**eps_agr)*(A_agr_t**(sigma-1)) + self.cou.om_man_ams*C*(A_man_t**(sigma-1)) + (1-self.cou.om_agr_ams-self.cou.om_man_ams)*(C**eps_ser)*(A_ser_t**(sigma-1)))
-			C_lev_E_ams.append(fsolve(C_exp_ams, L_t).item()) 
-		C_level_E_ams = pd.DataFrame(C_lev_E_ams)       
+			C_lev_E_ams.append(fsolve(C_exp_ams, L_t).item())
+		C_level_E_ams = pd.DataFrame(C_lev_E_ams)
 		g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1).flatten()
+		# Level anchor: base-year C equals relative GDP per hour (country vs. US) so
+		# that cross-country comparisons in levels are meaningful.
 		self.C_E_ams_baseline = [np.array(self.cou.GDP_ph)[0]/np.array(GDP_ph_USA)[0]]
 		for i in range(len(g_C_E_ams) - 1):
 			self.C_E_ams_baseline.append((1+g_C_E_ams[i+1])*self.C_E_ams_baseline[i])
@@ -825,6 +850,15 @@ pd.DataFrame(cf_2_catch_nps).to_excel('../output/figures/Counterfactual_2_catch_
 
 
 'Germany'
+# "Trade cure" block: for each catch-up sector, find the counterfactual sectoral
+# net-export ratio NX_CF (as share of aggregate expenditure E) that would make
+# the country's aggregate labor productivity equal the observed US level E_USA[-1],
+# given the catch-up productivity A_i and the observed net exports in the other
+# five sectors. The residual solved is: E_USA[-1] - sum_j share_j * A_j = 0, where
+# share_j depends on NX_CF through the labor allocation L(NX_CF). EXOGENOUS trade
+# means net exports in non-catch-up sectors are held at their observed last-period
+# values (nx_*_E). Initial guesses are the observed nx_*_E (small deviation) except
+# for agr where 0 is used because observed agr nx is close to zero and scale-free.
 for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 	DEU_cf2_catch_trade=counterfactual('DEU')
 	DEU_cf2_catch_trade.baseline()
@@ -846,13 +880,17 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 	
 	C=DEU_cf2_catch_trade.C_nps[-1]
 
-	weight_agr = DEU.om_agr_nps*(A_agr**(sigma-1))*(C**eps_agr) 
-	weight_man = DEU.om_man_nps*(A_man**(sigma-1))*C 
+	# CES aggregate-price-index weights under counterfactual A_i and utility C.
+	# These are the same weights as in C_exp_nps (market-clearing identity).
+	weight_agr = DEU.om_agr_nps*(A_agr**(sigma-1))*(C**eps_agr)
+	weight_man = DEU.om_man_nps*(A_man**(sigma-1))*C
 	weight_trd = DEU.om_trd_nps*(A_trd**(sigma-1))*(C**eps_trd)
 	weight_bss = DEU.om_bss_nps*(A_bss**(sigma-1))*(C**eps_bss)
 	weight_fin = DEU.om_fin_nps*(A_fin**(sigma-1))*(C**eps_fin)
 	weight_nps = (1-DEU.om_agr_nps-DEU.om_man_nps-DEU.om_trd_nps-DEU.om_bss_nps-DEU.om_fin_nps)*(A_nps**(sigma-1))*(C**eps_nps)
-	
+
+	# Aggregate expenditure index E (inverse of the CES price index). NX terms below
+	# are expressed in units of E^(1-sigma) so that E appears only as a scalar here.
 	E = (weight_agr + weight_man + weight_trd + weight_bss + weight_fin + weight_nps)**(1/(1-sigma))
 
 	if sec == 'agr':
@@ -872,6 +910,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-DEU.om_agr_nps-DEU.om_man_nps-DEU.om_trd_nps-DEU.om_bss_nps-DEU.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess 0: observed agr net-export share is typically near zero, so
+		# starting away from the observed nx_agr_E avoids pathological Jacobian scaling.
 		nx_cf = fsolve(find_nx, 0)
 		print('Counterfactual trade in agr is ' + str(nx_cf) + ' while current net trade is ' +str(nx_agr_E))
 		print('Counterfactual trade in agr is ' + str(nx_cf/nx_agr_E) + ' fold')
@@ -896,6 +936,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-DEU.om_agr_nps-DEU.om_man_nps-DEU.om_trd_nps-DEU.om_bss_nps-DEU.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess = observed man NX (ratio nx_man_E). The counterfactual is
+		# expected to be near the observed value because catch-up shifts are moderate.
 		nx_cf = fsolve(find_nx, nx_man_E)
 		print('Counterfactual trade in man is ' +str(nx_cf) + ' while current net trade is ' +str(nx_man_E))
 		print('Counterfactual trade in man is ' +str(nx_cf/nx_man_E) + ' fold')
@@ -1047,6 +1089,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-FRA.om_agr_nps-FRA.om_man_nps-FRA.om_trd_nps-FRA.om_bss_nps-FRA.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess 0: observed agr net-export share is typically near zero, so
+		# starting away from the observed nx_agr_E avoids pathological Jacobian scaling.
 		nx_cf = fsolve(find_nx, 0)
 		print('Counterfactual trade in agr is ' + str(nx_cf) + ' while current net trade is ' +str(nx_agr_E))
 		print('Counterfactual trade in agr is ' + str(nx_cf/nx_agr_E) + ' fold')
@@ -1071,6 +1115,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-FRA.om_agr_nps-FRA.om_man_nps-FRA.om_trd_nps-FRA.om_bss_nps-FRA.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess = observed man NX (ratio nx_man_E). The counterfactual is
+		# expected to be near the observed value because catch-up shifts are moderate.
 		nx_cf = fsolve(find_nx, nx_man_E)
 		print('Counterfactual trade in man is ' +str(nx_cf) + ' while current net trade is ' +str(nx_man_E))
 		print('Counterfactual trade in man is ' +str(nx_cf/nx_man_E) + ' fold')
@@ -1222,6 +1268,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-GBR.om_agr_nps-GBR.om_man_nps-GBR.om_trd_nps-GBR.om_bss_nps-GBR.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess 0: observed agr net-export share is typically near zero, so
+		# starting away from the observed nx_agr_E avoids pathological Jacobian scaling.
 		nx_cf = fsolve(find_nx, 0)
 		print('Counterfactual trade in agr is ' + str(nx_cf) + ' while current net trade is ' +str(nx_agr_E))
 		print('Counterfactual trade in agr is ' + str(nx_cf/nx_agr_E) + ' fold')
@@ -1246,6 +1294,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-GBR.om_agr_nps-GBR.om_man_nps-GBR.om_trd_nps-GBR.om_bss_nps-GBR.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess = observed man NX (ratio nx_man_E). The counterfactual is
+		# expected to be near the observed value because catch-up shifts are moderate.
 		nx_cf = fsolve(find_nx, nx_man_E)
 		print('Counterfactual trade in man is ' +str(nx_cf) + ' while current net trade is ' +str(nx_man_E))
 		print('Counterfactual trade in man is ' +str(nx_cf/nx_man_E) + ' fold')
@@ -1396,6 +1446,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-ITA.om_agr_nps-ITA.om_man_nps-ITA.om_trd_nps-ITA.om_bss_nps-ITA.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess 0: observed agr net-export share is typically near zero, so
+		# starting away from the observed nx_agr_E avoids pathological Jacobian scaling.
 		nx_cf = fsolve(find_nx, 0)
 		print('Counterfactual trade in agr is ' + str(nx_cf) + ' while current net trade is ' +str(nx_agr_E))
 		print('Counterfactual trade in agr is ' + str(nx_cf/nx_agr_E) + ' fold')
@@ -1420,6 +1472,8 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 			share_nps = ((1-ITA.om_agr_nps-ITA.om_man_nps-ITA.om_trd_nps-ITA.om_bss_nps-ITA.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
 		
 			return E_USA[-1] - (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_bss + share_fin*A_fin + share_nps*A_nps)
+		# Initial guess = observed man NX (ratio nx_man_E). The counterfactual is
+		# expected to be near the observed value because catch-up shifts are moderate.
 		nx_cf = fsolve(find_nx, nx_man_E)
 		print('Counterfactual trade in man is ' +str(nx_cf) + ' while current net trade is ' +str(nx_man_E))
 		print('Counterfactual trade in man is ' +str(nx_cf/nx_man_E) + ' fold')

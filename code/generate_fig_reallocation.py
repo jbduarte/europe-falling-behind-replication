@@ -1,3 +1,27 @@
+"""
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
+
+File:        generate_fig_reallocation.py
+Purpose:     Generate Figure 4 of the paper — the labor-reallocation figure.
+             Runs sector-by-sector counterfactuals in which the EU4 countries
+             (DEU, FRA, GBR, ITA) receive the US growth rate of sectoral
+             productivity in one sector at a time (trd, bss, fin, nps, man, agr)
+             and plots the resulting EU4 employment-share trajectories against
+             the data, making visible which sectors drive the EU4-US
+             structural-change gap.
+Pipeline:    Step 10/19 — Figure 4 (sectoral catch-up reallocation).
+Inputs:      model_country class and EUR4 aggregates from model_test_europe.py;
+             counterfactual class from counterfactuals.py.
+Outputs:     ../output/figures/fig_3.pdf (saved under the internal name fig_3;
+             relabeled to Figure 4 by generate_paper_outputs.py).
+Dependencies: model_calibration_USA.py (Step 1), model_test_europe.py (Step 2),
+              counterfactuals.py (Step 3).
+"""
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -12,6 +36,9 @@ from model_test_europe import (model_country, EUR4_h_tot,
     EUR4_share_bss_nps_m, EUR4_share_fin_nps_m, EUR4_share_nps_nps_m)
 from counterfactuals import counterfactual
 
+# ── Build baseline model_country objects for each EU4 country ──
+# productivity_series() back-out sectoral A_i; predictions_nps() solves the
+# closed-economy six-sector model that delivers baseline employment shares.
 DEU = model_country('DEU')
 DEU.productivity_series()
 DEU.predictions_nps()
@@ -28,7 +55,16 @@ ITA = model_country('ITA')
 ITA.productivity_series()
 ITA.predictions_nps()
 
-'trd'
+# ────────────────────────────────────────────────────────────────────────────
+# Sectoral catch-up counterfactuals: feed the U.S. growth rate of sectoral
+# productivity into one EU4 sector at a time, holding all others at baseline.
+# `feed_catch_up_growth(0, sec)` re-solves the model for sector `sec` only;
+# the resulting share_*_nps_m series are then aggregated to EU4 by hours weights.
+# Three blocks below run the catch-up for trd, bss and fin (the three sectors
+# plotted in Figure 4). The agr/man/nps panels are not shown in the paper.
+# ────────────────────────────────────────────────────────────────────────────
+
+# --- Catch-up in trd (wholesale and retail trade) ---
 sec='trd'
 DEU_cf=counterfactual('DEU')
 DEU_cf.baseline()
@@ -54,7 +90,7 @@ EUR4_cf_trd_share_fin = (np.array(DEU.h_tot)*np.array(DEU_cf.share_fin_nps_m, dt
 EUR4_cf_trd_share_nps = (np.array(DEU.h_tot)*np.array(DEU_cf.share_nps_nps_m, dtype=object).flatten() + np.array(FRA.h_tot)*np.array(FRA_cf.share_nps_nps_m, dtype=object).flatten() + np.array(GBR.h_tot)*np.array(GBR_cf.share_nps_nps_m, dtype=object).flatten() + np.array(ITA.h_tot)*np.array(ITA_cf.share_nps_nps_m, dtype=object).flatten())/EUR4_h_tot
 
 
-'bss'
+# --- Catch-up in bss (business services) ---
 sec='bss'
 DEU_cf=counterfactual('DEU')
 DEU_cf.baseline()
@@ -81,7 +117,7 @@ EUR4_cf_bss_share_nps = (np.array(DEU.h_tot)*np.array(DEU_cf.share_nps_nps_m, dt
 
 
 
-'fin'
+# --- Catch-up in fin (financial services) ---
 sec='fin'
 DEU_cf=counterfactual('DEU')
 DEU_cf.baseline()
@@ -107,11 +143,12 @@ EUR4_cf_fin_share_fin = (np.array(DEU.h_tot)*np.array(DEU_cf.share_fin_nps_m, dt
 EUR4_cf_fin_share_nps = (np.array(DEU.h_tot)*np.array(DEU_cf.share_nps_nps_m, dtype=object).flatten() + np.array(FRA.h_tot)*np.array(FRA_cf.share_nps_nps_m, dtype=object).flatten() + np.array(GBR.h_tot)*np.array(GBR_cf.share_nps_nps_m, dtype=object).flatten() + np.array(ITA.h_tot)*np.array(ITA_cf.share_nps_nps_m, dtype=object).flatten())/EUR4_h_tot
 
 
-'''
------------
-	Plot
------------
-'''
+# ────────────────────────────────────────────────────────────────────────────
+# Figure 4: 1x3 panel. Each panel fixes one catch-up sector (bss, fin, trd)
+# and overlays baseline (solid) vs. counterfactual (dashed) employment-share
+# trajectories for all six sectors. markevery=7 thins markers so the lines
+# remain readable across 50 years of annual data.
+# ────────────────────────────────────────────────────────────────────────────
 fig = plt.figure()
 plt.subplots_adjust(wspace=0.01, hspace=0.01)
 fig.set_figheight(4)

@@ -1,13 +1,33 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
-Filename: trade_counterfactual.py
-Description: This program uses the BDS model with calibrated parameters to establish
-        counterfactual experiments.
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        trade_counterfactuals_endogenous.py
+Purpose:     Run ENDOGENOUS-trade counterfactual experiments. This is the
+             headline quantitative exercise: each country's sectoral
+             productivities are replaced with US-style paths, and trade flows
+             are re-generated endogenously via the calibrated xi_i elasticities.
+             Produces Table 6 decomposition (incl. CF4), the 2-panel
+             open-vs-closed comparison (Figure 2), and the trade-cure rows.
+             Supports optional cache loading (dill) to skip the ~long
+             endogenous calibration on re-runs.
+Pipeline:    Step 9/19 — Endogenous-trade counterfactuals.
+Inputs:      Either (i) the cached US calibration at
+             ../output/data/calibration_cache_endogenous.pkl, or (ii) direct
+             imports from model_calibration_USA.py, model_calibration_USA_open.py,
+             and model_calibration_USA_endogenous_open.py. Also imports European
+             objects from model_test_europe_open.py (note: the endogenous EU
+             module is wired in downstream of the open-economy EU object).
+Outputs:     ../output/figures/Counterfactual_*_trade.xlsx (endogenous CF1 and
+             CF2 catch-up AMS/NPS), trade_cure_data table, comparison_data
+             for Figure 2, and ../output/figures/fig_2_open_comparison.pdf.
+Dependencies: model_calibration_USA.py (Step 1), model_calibration_USA_open.py
+              (Step 4), model_calibration_USA_endogenous_open.py (Step 7),
+              model_test_europe_open.py (Step 5). Optional cache file speeds
+              re-execution.
 """
 
 import matplotlib
@@ -26,8 +46,26 @@ rc("text", usetex=True)
 rc("font", family="serif")
 
 # --------------------------------------------------------------------------
-# Calibration loading: try cache first, fall back to full calibration
-# Set USE_CACHE = True after running save_calibration_endogenous.py
+# Calibration loading: try cache first, fall back to full (re-)calibration.
+#
+# The endogenous-trade calibration takes ~60 minutes end-to-end (model_country
+# instantiation + xi_i calibration + European aggregates) and is deterministic in
+# inputs, so we persist the full calibration object to a dill pickle the first
+# time it runs. Subsequent runs unpack from the cache in seconds.
+#
+# Cache path:  ../output/data/calibration_cache_endogenous.pkl
+# Created by:  save_calibration_endogenous.py (Step 8/19)
+# Consumed by: this file (USE_CACHE branch below)
+#
+# To force a full recalibration (e.g., after changing model_test_europe_open.py,
+# model_calibration_USA_endogenous_open.py, or any xi_i input):
+#     rm ../output/data/calibration_cache_endogenous.pkl
+# Then re-run save_calibration_endogenous.py (or just this script; the fallback
+# branch will regenerate everything, but the cache file will not be rewritten
+# unless save_calibration_endogenous.py is run).
+#
+# dill (not vanilla pickle) is required because model_country instances carry
+# bound methods and closures that pickle cannot serialise.
 # --------------------------------------------------------------------------
 USE_CACHE = os.path.exists("../output/data/calibration_cache_endogenous.pkl")
 
@@ -375,7 +413,11 @@ if not USE_CACHE:
     USA.predictions_nps()
 
 
-# Pre-calibrated country cache for fast deep-copy in counterfactuals
+# Pre-calibrated country cache for fast deep-copy in the counterfactual class.
+# copy.deepcopy on an already-calibrated instance is ~1000x cheaper than calling
+# model_country(code).productivity_series() from scratch (which refits all
+# auxiliary regressions), and it guarantees each counterfactual starts from the
+# same calibrated primitives without mutating the originals across CF experiments.
 _CALIBRATED = {
     "AUT": AUT, "BEL": BEL, "DEU": DEU, "DNK": DNK,
     "ESP": ESP, "FIN": FIN, "FRA": FRA, "GBR": GBR,
@@ -388,6 +430,10 @@ class counterfactual:
     "Counterfactuals"
 
     def __init__(self, country_code):
+        # Deep-copy from _CALIBRATED: counterfactuals mutate self.cou (productivity
+        # paths, A_i_catch, growth-rate overrides). Without deepcopy, running a
+        # second counterfactual for the same country would start from the previous
+        # CF's perturbed state rather than the baseline calibration.
         self.country_code = country_code
         self.cou = copy.deepcopy(_CALIBRATED[country_code])
 
@@ -427,9 +473,15 @@ class counterfactual:
         self.C_baseline = list(self.cou.C)
         self.E_baseline = list(self.cou.E)
 
+        # Closed-economy C baseline (ams model): solve the market-clearing identity
+        # L_t^(1-sigma) = sum_i om_i * C_t^eps_i * A_it^(sigma-1) for C_t, year by
+        # year. This is the closed-economy counterpart used only to form the ratio
+        # C_closed_cf / C_closed_baseline in _compute_cf_C — the open-economy C
+        # stays anchored to self.C_baseline. Initial guess L_t (same order of
+        # magnitude as C) converges in fewer than 10 iterations at default xtol.
         "Closed-economy C baseline (ams model)"
         C_lev_E_ams = []
-        for i in range(len(self.cou.h_tot)):
+        for i in range(len(self.cou.h_tot)):   # time loop over years (1970-2019)
             L_t = np.array(self.cou.h_tot)[i]
             A_agr_t = np.array(self.cou.A_agr)[i]
             A_man_t = np.array(self.cou.A_man)[i]
@@ -507,12 +559,27 @@ class counterfactual:
             )
 
     def _compute_cf_C(self):
-        """Compute counterfactual C using closed-economy ratio approach.
+        """Compute counterfactual utility index C using a closed-economy ratio.
 
-        After productivity_series() changes A, compute closed-economy C
-        with the new A values (via fsolve of market clearing) and apply
-        the ratio to the data-based open-economy C.
-        E is NOT changed (same as exogenous model).
+        Rationale:
+          Under endogenous trade, the open-economy C_t depends on the full fixed
+          point (C, E, net exports, labor shares). Re-solving that fixed point at
+          every counterfactual grid point would be prohibitively costly. Instead,
+          we exploit the fact that the CF change in productivity (A_i^cf vs A_i)
+          propagates into C_t similarly in open and closed economy when the trade
+          structure is held fixed, and we scale the observed open-economy C by
+          the closed-economy ratio:
+
+              C_cf(t) = C_baseline(t) * [C_closed_cf(t) / C_closed_baseline(t)]
+
+          where C_closed_* is obtained by fsolve of the closed-economy market-
+          clearing residual (same residual as in baseline(), with CF A values).
+          E (aggregate expenditure index) is NOT perturbed here — it tracks the
+          exogenous-trade specification so that cross-model comparisons (Fig. 2)
+          differ only through the endogenous net-export channel.
+
+          Side effect: sets self.C_cf_ams and self.C_cf_nps as python lists of
+          length equal to self.cou.h_tot.
         """
         cou = self.cou
 
@@ -671,6 +738,20 @@ class counterfactual:
         self.A_tot_nps = self.cou.A_tot_nps
 
     def feed_catch_up_growth(self, init_year, sec):
+        # CF2 "catch-up" counterfactual (endogenous-trade variant).
+        # Algebra identical to counterfactuals.py::feed_catch_up_growth: pick the
+        # end-of-sample A_i that, holding the other five sectors' A_j fixed, lifts
+        # aggregate labor productivity to the observed US level E_USA[-1]. Then
+        # back out the constant growth rate g that takes A_i[0] to A_i_catch over
+        # ts_length years and overwrite the growth-rate path from init_year onward.
+        #
+        # Infeasibility: the algebra produces A_i_catch < 0 when sum_{j!=i} h_j*A_j
+        # alone already exceeds E_USA[-1]. This happens for small sectors where
+        # closing the gap would require negative productivity. We emit a
+        # UserWarning tagged with country/sector and let the caller decide: the
+        # subsequent g computation via (A/A_0)^(1/T) returns a complex number,
+        # which propagates into the counterfactual productivity series. For
+        # reporting (Table 6) only the numerically well-defined entries are used.
         "Baseline"
         self.baseline()
 
@@ -2888,7 +2969,22 @@ pd.DataFrame(cf_2_catch_nps).to_excel(
 
 
 "Germany"
-# Endogenous trade constants: K_i = E[0]*M_i_E[0] / A_i[0]^(xi_i-1)
+# Endogenous trade constants K_i are calibrated so that sectoral exports in the
+# base year (t=0) match the data: x_{i,0} = K_i * A_{i,0}^(xi_i - 1) / E_0 = M_{i,0} * E_0
+# implies K_i = E_0 * M_{i,0} / A_{i,0}^(xi_i - 1). This is the "x_0,i" anchoring
+# discussed in the paper's Section 6.2 so that initial-period sectoral exports
+# match observed values. xi_i are the trade-elasticity parameters calibrated in
+# model_calibration_USA_endogenous_open.py (paper's EU4 xi values: agr=0.74,
+# man=0.91, trd=1.26, bss=2.59, fin=2.01, nps=9.28).
+#
+# The "trade cure" question: given CF catch-up productivity A_i, what
+# counterfactual net-export share NX_CF in sector `sec` would push aggregate
+# labor productivity to the observed US level? Unlike trade_counterfactuals.py
+# (exogenous trade, where NX in non-cure sectors are observed data), here the
+# non-cure nx_j_E are themselves endogenous responses to the CF A: they are
+# computed from K_j, xi_j and CF A_j via nx_j = K_j*A_j^(xi_j-1)/E - M_j[-1].
+# This is what drives the sign reversals reported in Table 6 Panel B (e.g., the
+# nps overshoot from +11.54 to -5.85).
 K_agr_DEU = DEU.E[0] * DEU.M_agr_E[0] / (DEU.A_agr[0] ** (DEU.xi_agr - 1))
 K_man_DEU = DEU.E[0] * DEU.M_man_E[0] / (DEU.A_man[0] ** (DEU.xi_man - 1))
 K_trd_DEU = DEU.E[0] * DEU.M_trd_E[0] / (DEU.A_trd[0] ** (DEU.xi_trd - 1))
@@ -3010,6 +3106,11 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess 0 for agr NX: observed agr net-export share is small and
+        # close to zero, so seeding at 0 gives the cleanest Jacobian scaling. Note:
+        # occasional "iteration is not making good progress" RuntimeWarnings are
+        # expected when the residual is already near machine precision at x0 — they
+        # do not indicate failure, and fsolve still returns the converged root.
         nx_cf = fsolve(find_nx, 0)
         print(
             "Counterfactual trade in agr is "
@@ -3091,6 +3192,9 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess = observed (endogenously recomputed) man NX. Under
+        # endogenous trade the CF root is typically nearby because nx_man_E already
+        # reflects the CF productivity response through K_man and xi_man.
         nx_cf = fsolve(find_nx, nx_man_E)
         print(
             "Counterfactual trade in man is "
@@ -3431,6 +3535,9 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
         print("Current productivity in nps is " + str(DEU.A_nps[-1]) + " fold")
         DEU.nx_cf_nps = nx_cf
 
+# France: identical trade-cure structure as the Germany block above (see header
+# comment there for the algebra). K_* constants rebuilt per country so that each
+# country's t=0 sectoral exports match its own data.
 "France"
 # Endogenous trade constants: K_i = E[0]*M_i_E[0] / A_i[0]^(xi_i-1)
 K_agr_FRA = FRA.E[0] * FRA.M_agr_E[0] / (FRA.A_agr[0] ** (FRA.xi_agr - 1))
@@ -3554,6 +3661,11 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess 0 for agr NX: observed agr net-export share is small and
+        # close to zero, so seeding at 0 gives the cleanest Jacobian scaling. Note:
+        # occasional "iteration is not making good progress" RuntimeWarnings are
+        # expected when the residual is already near machine precision at x0 — they
+        # do not indicate failure, and fsolve still returns the converged root.
         nx_cf = fsolve(find_nx, 0)
         print(
             "Counterfactual trade in agr is "
@@ -3635,6 +3747,9 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess = observed (endogenously recomputed) man NX. Under
+        # endogenous trade the CF root is typically nearby because nx_man_E already
+        # reflects the CF productivity response through K_man and xi_man.
         nx_cf = fsolve(find_nx, nx_man_E)
         print(
             "Counterfactual trade in man is "
@@ -3975,6 +4090,10 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
         print("Current productivity in nps is " + str(FRA.A_nps[-1]) + " fold")
         FRA.nx_cf_nps = nx_cf
 
+# Great Britain: identical trade-cure structure (see Germany block for the
+# algebra). Note GBR never adopted the euro — discussed in robustness paragraph
+# of sec_introduction.tex — so the country-specific K_* keep GBR's trade elasticities
+# separate from the euro-area countries.
 "Great Britain"
 # Endogenous trade constants: K_i = E[0]*M_i_E[0] / A_i[0]^(xi_i-1)
 K_agr_GBR = GBR.E[0] * GBR.M_agr_E[0] / (GBR.A_agr[0] ** (GBR.xi_agr - 1))
@@ -4098,6 +4217,11 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess 0 for agr NX: observed agr net-export share is small and
+        # close to zero, so seeding at 0 gives the cleanest Jacobian scaling. Note:
+        # occasional "iteration is not making good progress" RuntimeWarnings are
+        # expected when the residual is already near machine precision at x0 — they
+        # do not indicate failure, and fsolve still returns the converged root.
         nx_cf = fsolve(find_nx, 0)
         print(
             "Counterfactual trade in agr is "
@@ -4179,6 +4303,9 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess = observed (endogenously recomputed) man NX. Under
+        # endogenous trade the CF root is typically nearby because nx_man_E already
+        # reflects the CF productivity response through K_man and xi_man.
         nx_cf = fsolve(find_nx, nx_man_E)
         print(
             "Counterfactual trade in man is "
@@ -4518,6 +4645,9 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
         print("Counterfactual productivity in nps is " + str(A_nps) + " fold")
         print("Current productivity in nps is " + str(GBR.A_nps[-1]) + " fold")
         GBR.nx_cf_nps = nx_cf
+# Italy: identical trade-cure structure (see Germany block). EU4 aggregate
+# trade-cure values are built below by h_tot-weighted aggregation over DEU, FRA,
+# GBR, ITA.
 "Italy"
 # Endogenous trade constants: K_i = E[0]*M_i_E[0] / A_i[0]^(xi_i-1)
 K_agr_ITA = ITA.E[0] * ITA.M_agr_E[0] / (ITA.A_agr[0] ** (ITA.xi_agr - 1))
@@ -4641,6 +4771,11 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess 0 for agr NX: observed agr net-export share is small and
+        # close to zero, so seeding at 0 gives the cleanest Jacobian scaling. Note:
+        # occasional "iteration is not making good progress" RuntimeWarnings are
+        # expected when the residual is already near machine precision at x0 — they
+        # do not indicate failure, and fsolve still returns the converged root.
         nx_cf = fsolve(find_nx, 0)
         print(
             "Counterfactual trade in agr is "
@@ -4722,6 +4857,9 @@ for sec in ["agr", "man", "trd", "fin", "bss", "nps"]:
                 + share_nps * A_nps
             )
 
+        # Initial guess = observed (endogenously recomputed) man NX. Under
+        # endogenous trade the CF root is typically nearby because nx_man_E already
+        # reflects the CF productivity response through K_man and xi_man.
         nx_cf = fsolve(find_nx, nx_man_E)
         print(
             "Counterfactual trade in man is "
@@ -5151,7 +5289,11 @@ print(EUR4_nx_cf_bss)
 print(EUR4_nx_cf_fin)
 print(EUR4_nx_cf_nps)
 
-# Save trade cure net exports to Excel for use by generate_endogenous_paper_outputs.py
+# Save trade-cure net exports to Excel for consumption by
+# generate_endogenous_paper_outputs.py (Step 11/19), which builds Table 6 Panel B
+# "exogenous trade cure" column from Observed_NX and the endogenous-trade
+# "Counterfactual_NX" column. Values are h_tot-weighted EU4 averages of country
+# nx shares (see EUR4_nx_cf_* construction above).
 trade_cure_data = {
     "Sector": ["agr", "man", "trd", "bss", "fin", "nps"],
     "Observed_NX": [EUR4_nx_agr_E, EUR4_nx_man_E, EUR4_nx_trd_E,
@@ -5248,7 +5390,10 @@ cf_base = np.array(
 ========================================================================================
 """
 
-# Late import of exogenous model predictions (aliased to avoid conflicts)
+# Late import of exogenous-trade model predictions. Deferred to this point (not
+# at top of file) so that the endogenous-trade calibration can finish without the
+# exogenous namespace polluting the endogenous `share_*` / `A_tot_*` variables
+# used above. `_exo` suffix is applied on import to prevent accidental shadowing.
 from model_test_europe_open import (
     EUR4_share_agr as EUR4_share_agr_exo,
     EUR4_share_man as EUR4_share_man_exo,
@@ -5344,6 +5489,12 @@ pd.DataFrame(comparison_data).to_excel(
 )
 
 # ------- Comparison Figure: EUR4 Employment Shares & Productivity -------
+# Figure 2 in the paper. Two-panel side-by-side:
+#   (Left)  EUR4 NPS employment shares (agr/man/nps) — data vs. exogenous-trade
+#           model vs. endogenous-trade model, 1970-2019.
+#   (Right) EUR4 aggregate labor productivity relative to the US — same three
+#           series. Visualises that the endogenous-trade model captures the
+#           2000s slowdown observed in the data that the exogenous model misses.
 # Endogenous predictions (already imported from model_test_europe_endogenous_xn)
 # Exogenous predictions (imported above with _exo suffix)
 

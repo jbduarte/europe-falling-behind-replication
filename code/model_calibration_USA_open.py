@@ -1,13 +1,26 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Buiatti and Duarte)
-Filename: model_calibration_USA_open.py
-Description: This program calibrates the BDS open economy modeland provides the test of 
-	the theory.
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        model_calibration_USA_open.py
+Purpose:     Calibrate the open-economy version of the model on US data under
+             EXOGENOUS trade: sectoral net exports (expo+impo)/Y are taken as
+             given from OECD ICIO data and fed into the sectoral resource
+             constraint. Recovers US sectoral productivities A_i and employment
+             shares consistent with observed trade flows.
+Pipeline:    Step 4/19 — Open-economy (exogenous trade) calibration on US.
+Inputs:      ../data/euklems_2023.csv (EUKLEMS 2023 VA_Q, H by sector)
+             ../data/raw/OECD_GDP_ph.xlsx (OECD GDP per hour, PPP USD)
+             ../data/io_panel.xlsx (sectoral exports and imports from OECD ICIO)
+             ../data/exp_imp_aggregate_panel.xlsx (aggregate trade totals)
+Outputs:     Module-level variables: GDP_ph, E, A_tot, sectoral shares
+             share_*, aggregates A_tot_ams / A_tot_nps and their "_closed"
+             counterparts (i.e., predictions if the economy were closed), and
+             openness ratios exp_imp_*_Y used by Figure 5.
+Dependencies: model_calibration_USA.py (imports sigma and eps_* preference parameters).
 """
 
 import matplotlib
@@ -243,12 +256,19 @@ impo_ser= impo_trd + impo_bss + impo_fin + impo_nps
 impo_c_tot, impo_tot = sm.tsa.filters.hpfilter((-1)*data_tot['impo'],100)
 
 
-''' 
+'''
 ------------------------
-	Parameretization 
+	Parameterization
 ------------------------
 '''
-# The following string runs the calibration of the model on the US, and imports the parameter values that are used in this the baseline calibration.
+# Import the closed-economy preference parameters (sigma, eps_*) calibrated
+# in Step 1. The open-economy specification in Section 6 of the paper keeps
+# preferences fixed and only augments the sectoral resource constraint with
+# sectoral net exports nx_i_E expressed as shares of total credited
+# expenditure. Under linear-in-labor technology, domestic employment in i
+# then absorbs both the domestic consumption allocation and the net-export
+# wedge; hence the CES weights Omega_i are re-identified below from
+# initial-period shares NET of the observed trade wedge, not from raw shares.
 from model_calibration_USA import sigma, eps_agr, eps_trd, eps_fin, eps_bss, eps_nps, eps_ser
 
 'Relative labor demand'
@@ -339,7 +359,12 @@ rel_p_fin_man_c, rel_p_fin_man = sm.tsa.filters.hpfilter((data_fin['VA']/data_fi
 rel_p_nps_man_c, rel_p_nps_man = sm.tsa.filters.hpfilter((data_nps['VA']/data_nps['VA_Q'])/(data_man['VA']/data_man['VA_Q']),100)
 rel_p_ser_man_c, rel_p_ser_man = sm.tsa.filters.hpfilter((data_ser['VA']/data_ser['VA_Q'])/(data_man['VA']/data_man['VA_Q']),100)
 
-'Initial employment shares'
+'Initial CES weights Omega_i (open-economy adjustment).'
+'Observed initial-period employment share equals (domestic consumption +'
+'net-export wedge) / L. Solving that identity for the CES weight Omega_i'
+'gives the expression below, which subtracts the sectoral trade wedge'
+'((1/A_i)*nx_i_E/p_i) and rescales by the aggregate trade term so that'
+'sum_i Omega_i recovers one in the initial period.'
 om_agr = np.array(share_agr)[0]*(1+((1/np.array(A_tot)[0])/np.array(p_tot)[0])*np.array(nx_tot_E)[0])-((1/np.array(A_agr)[0])/np.array(p_agr)[0])*np.array(nx_agr_E)[0]
 om_man = np.array(share_man)[0]*(1+((1/np.array(A_tot)[0])/np.array(p_tot)[0])*np.array(nx_tot_E)[0])-((1/np.array(A_man)[0])/np.array(p_man)[0])*np.array(nx_man_E)[0]
 om_trd = np.array(share_trd)[0]*(1+((1/np.array(A_tot)[0])/np.array(p_tot)[0])*np.array(nx_tot_E)[0])-((1/np.array(A_trd)[0])/np.array(p_trd)[0])*np.array(nx_trd_E)[0]
@@ -348,6 +373,9 @@ om_fin = np.array(share_fin)[0]*(1+((1/np.array(A_tot)[0])/np.array(p_tot)[0])*n
 om_nps = np.array(share_nps)[0]*(1+((1/np.array(A_tot)[0])/np.array(p_tot)[0])*np.array(nx_tot_E)[0])-((1/np.array(A_nps)[0])/np.array(p_nps)[0])*np.array(nx_nps_E)[0]
 om_ser = np.array(share_ser)[0]*(1+((1/np.array(A_tot)[0])/np.array(p_tot)[0])*np.array(nx_tot_E)[0])-((1/np.array(A_ser)[0])/np.array(p_ser)[0])*np.array(nx_ser_E)[0]
 
+'Counterfactual CES weights under closed-economy accounting (nx_i = 0):'
+'simply equal to observed initial-period employment shares. Stored so the'
+'class can report both open- and closed-economy predictions side by side.'
 om_agr_closed = np.array(share_agr)[0]
 om_man_closed = np.array(share_man)[0]
 om_trd_closed = np.array(share_trd)[0]
@@ -356,7 +384,11 @@ om_fin_closed = np.array(share_fin)[0]
 om_nps_closed = np.array(share_nps)[0]
 om_ser_closed = np.array(share_ser)[0]
 
-'Non-homothetic CES index'
+'Non-homothetic CES index (open-economy form). Recovers C from the'
+'relative-EXPENDITURE (not relative-labor) equation: C^(eps_i-1) ='
+'(om_m/om_i) * (E_i/E_m) * (p_i/p_m)^(sigma-1). Using domestic'
+'expenditure shares (VA minus net exports) strips out the trade wedge'
+'that contaminates the relative-labor identity in the open economy.'
 def C_index(om_m, om_i, exp_i_m, pi_pm, sigma, epsilon_i):
 	C_level = ((om_m/om_i)*exp_i_m*(pi_pm**(sigma-1)))**(1/(epsilon_i-1))
 	g_C = np.array(C_level/C_level.shift(1) - 1)
@@ -372,22 +404,25 @@ def C_index(om_m, om_i, exp_i_m, pi_pm, sigma, epsilon_i):
 '''
 
 class model_ams:
-	"Structural Transformation with Agriculture, Manufacturing and Services"
+	"""Three-sector open-economy model (agr, man, ser) with exogenous sectoral
+	net exports nx_i. Domestic employment share in i equals the CES weight
+	plus the net-export wedge (E^(1-sigma))*nx_i; the 'closed' methods below
+	shut this wedge off using om_*_closed for the Section 6 decomposition."""
 
 	def __init__(self, sigma=sigma, eps_agr=eps_agr, eps_man=1, eps_ser=eps_ser, om_agr=om_agr, om_man=om_man, om_ser=om_ser):
 		'Initialize the Parameters'
 		self.sigma, self.eps_agr, self.eps_man, self.eps_ser, self.om_agr, self.om_man, self.om_ser, self.om_agr_closed, self.om_man_closed, self.om_ser_closed = sigma, eps_agr, 1, eps_ser, om_agr, om_man, om_ser, om_agr_closed, om_man_closed, om_ser_closed
 
 	def E(self, C, A_agr, A_man, A_ser):
-		'Expenditure'
-		weight_agr = self.om_agr*(A_agr**(self.sigma-1))*(C**self.eps_agr) 
+		'Aggregate expenditure from the Comin et al. (2021) implicit-utility identity: E = (sum_i Omega_i * A_i^(sigma-1) * C^eps_i)^(1/(1-sigma)), using p_i = 1/A_i under linear-in-labor production.'
+		weight_agr = self.om_agr*(A_agr**(self.sigma-1))*(C**self.eps_agr)
 		weight_man = self.om_man*(A_man**(self.sigma-1))*(C**self.eps_man) 
 		weight_ser = self.om_ser*(A_ser**(self.sigma-1))*(C**self.eps_ser)
 		return (weight_agr + weight_man + weight_ser)**(1/(1-self.sigma))
 
 	def labor_demand(self, C, A_agr, A_man, A_ser, nx_agr_E, nx_man_E, nx_ser_E):
-		'total Labor Demand (domestic)'
-		L = (self.om_agr*(C**self.eps_agr)*(A_agr**(self.sigma - 1)) + (self.E(C, A_agr, A_man, A_ser)**(1-self.sigma))*nx_agr_E + 
+		'Denominator (sum of un-normalized CES weights + sectoral trade wedges (E^(1-sigma))*nx_i_E) that converts each sectoral weight into an open-economy employment share.'
+		L = (self.om_agr*(C**self.eps_agr)*(A_agr**(self.sigma - 1)) + (self.E(C, A_agr, A_man, A_ser)**(1-self.sigma))*nx_agr_E +
 			 self.om_man*(C**self.eps_man)*(A_man**(self.sigma - 1)) + (self.E(C, A_agr, A_man, A_ser)**(1-self.sigma))*nx_man_E + 
 			 self.om_ser*(C**self.eps_ser)*(A_ser**(self.sigma - 1)) + (self.E(C, A_agr, A_man, A_ser)**(1-self.sigma))*nx_ser_E)
 		return L
@@ -408,9 +443,9 @@ class model_ams:
 		return l_ser
 
 	def labor_demand_closed(self, C, A_agr, A_man, A_ser):
-		'total Labor Demand (domestic)'
-		L = (self.om_agr_closed*(C**self.eps_agr)*(A_agr**(self.sigma - 1)) + 
-			 self.om_man_closed*(C**self.eps_man)*(A_man**(self.sigma - 1)) + 
+		'Counterfactual denominator with the trade wedge shut off; uses closed-economy CES weights om_*_closed (= observed initial shares).'
+		L = (self.om_agr_closed*(C**self.eps_agr)*(A_agr**(self.sigma - 1)) +
+			 self.om_man_closed*(C**self.eps_man)*(A_man**(self.sigma - 1)) +
 			 self.om_ser_closed*(C**self.eps_ser)*(A_ser**(self.sigma - 1)))
 		return L
 
@@ -430,7 +465,7 @@ class model_ams:
 		return l_ser
 
 class model_nps:
-	"Agriculture, Manufacturing, Whole Sale and Retail Trade, Business Services, and the Rest of Services"
+	"""Six-sector open-economy model (agr, man, trd, bss, fin, nps) with exogenous sectoral net exports. Same structure as model_ams with the services bundle disaggregated into trd, bss, fin, and nps."""
 	def __init__(self, sigma=sigma, eps_agr=eps_agr, eps_man=1, eps_trd=eps_trd, eps_bss=eps_bss, eps_fin=eps_fin, eps_nps=eps_nps, om_agr=om_agr, om_man=om_man, om_trd=om_trd, om_bss=om_bss, om_fin=om_fin, om_nps=om_nps):
 		'Initialize the Parameters'
 		self.sigma, self.eps_agr, self.eps_man, self.eps_trd, self.eps_bss, self.eps_fin, self.eps_nps, self.om_agr, self.om_man, self.om_trd, self.om_bss, self.om_fin, self.om_nps, self.om_agr_closed, self.om_man_closed, self.om_trd_closed, self.om_bss_closed, self.om_fin_closed, self.om_nps_closed = sigma, eps_agr, eps_man, eps_trd, eps_bss, eps_fin, eps_nps, om_agr, om_man, om_trd, om_bss, om_fin, om_nps, om_agr_closed, om_man_closed, om_trd_closed, om_bss_closed, om_fin_closed, om_nps_closed 

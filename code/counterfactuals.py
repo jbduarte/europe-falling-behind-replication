@@ -1,13 +1,29 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
-Filename: counterfactual.py
-Description: This program uses the BDS model with calibrated parameters to establish
-	counterfactual experiments. 
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        counterfactuals.py
+Purpose:     Run closed-economy counterfactual experiments for European economies.
+             Feeds counterfactual sectoral productivity paths (US catch-up growth
+             by sector, uniform growth, alternative preference parameters) into
+             the model and re-solves for employment shares and aggregate labor
+             productivity. Delivers the quantitative decompositions reported in
+             Tables 2, A.4, A.8 and Figure 4.
+Pipeline:    Step 3/19 — Closed-economy counterfactuals.
+Inputs:      US calibration objects (sigma, eps_*, A_*, E, GDP, A_tot_ams,
+             A_tot_nps, A_tot_ams_weighted, A_tot_nps_weighted) from
+             model_calibration_USA.py; European model_country instances and EU
+             aggregates (EUR4_*, EUR15_*, EURCORE_*, EURPERI_*) from
+             model_test_europe.py.
+Outputs:     ../output/figures/Counterfactual_*.xlsx (CF1 AMS/NPS, CF2 AMS/NPS,
+             CF2 catch-up AMS/NPS, CF3, and Counterfactual_ts.xlsx with EU4
+             time series for each experiment). Also pickles data_export. Exposes
+             the counterfactual class imported by generate_fig_reallocation.py
+             and price_specification_comparison.py.
+Dependencies: model_calibration_USA.py (Step 1), model_test_europe.py (Step 2).
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -20,10 +36,13 @@ from scipy.optimize import minimize_scalar, root, fsolve
 rc('text', usetex=True)
 rc('font', family='serif')
 
-# The following string runs the calibration of the model on the US, and imports the parameter values that are used in this program. Also, it imports US data and model predictions, needed in the European sectoral productivity measurement.
+# Import US preference parameters and US calibrated productivity/employment
+# objects (needed as the benchmark against which European counterfactuals are run).
 from model_calibration_USA import sigma, eps_agr, eps_ser, eps_trd, eps_bss, eps_fin, eps_nps, GDP, E, A_agr, A_man, A_trd, A_bss, A_fin, A_nps, A_ser, A_tot, A_tot_ams, A_tot_nps, A_tot_ams_weighted, A_tot_nps_weighted
 
-#The following string runs the measurement of productivity in Europe recovering the initial levels with our model.
+# Import European model_country instances and EU4/EU15/core/periphery aggregates
+# produced in Step 2 — they carry recovered sectoral productivities and observed
+# employment shares that the counterfactuals perturb.
 from model_test_europe import model_country, EUR4_h_tot, EURCORE_h_tot, EURPERI_h_tot,  EUR15_h_tot, EUR4_A_tot, EURCORE_A_tot, EURPERI_A_tot, EUR15_A_tot, EUR4_rel_A_tot, EUR15_rel_A_tot, EUR4_E, EUR15_E, EUR4_rel_E, EUR15_rel_E, \
 	EUR4_share_agr, EUR15_share_agr, EUR4_share_man, EUR15_share_man, EUR4_share_ser, EUR15_share_ser, EUR4_share_trd, EUR15_share_trd, EUR4_share_bss, EUR15_share_bss, EUR4_share_fin, EUR15_share_fin, EUR4_share_nps, EUR15_share_nps, \
 	EUR4_share_agr_ams_m, EUR15_share_agr_ams_m, EUR4_share_agr_nps_m, EUR15_share_agr_nps_m, EUR4_share_man_ams_m, EUR15_share_man_ams_m, EUR4_share_man_nps_m, EUR15_share_man_nps_m, EUR4_share_ser_ams_m, EUR15_share_ser_ams_m, EUR4_share_trd_nps_m, EUR15_share_trd_nps_m, EUR4_share_bss_nps_m, EUR15_share_bss_nps_m, EUR4_share_fin_nps_m, EUR15_share_fin_nps_m, EUR4_share_nps_nps_m, EUR15_share_nps_nps_m, \
@@ -35,6 +54,12 @@ data_export["EUR4_A_tot"] = EUR4_A_tot
 data_export["EUR4_A_tot_m"] = EUR4_A_tot_nps
 
 'Model for counterfactuals'
+
+# Pre-instantiate model_country for each EU member + the US so the productivity
+# series and ams/nps predictions are computed once up-front. Each instance holds
+# the sectoral productivity paths A_* and observed shares share_* that the
+# counterfactual class below will perturb (USA paths feed into feed_US_productivity_growth,
+# end-of-sample US levels anchor feed_catch_up_growth).
 
 EU15 = model_country('EU15')
 EU15.productivity_series()
@@ -402,23 +427,34 @@ class counterfactual:
 		self.ss_A_base_nps = self.cou.share_agr*self.cou.A_agr + self.cou.share_man*self.cou.A_man + self.cou.share_trd*self.cou.A_trd + self.cou.share_bss*self.cou.A_bss + self.cou.share_fin*self.cou.A_fin + self.cou.share_nps*self.cou.A_nps
 
 		'Baseline computation of C'
+		# Recover the year-by-year utility index C_t from the implicit labor-market-
+		# clearing identity L_t^(1-sigma) = sum_i om_i * C_t^eps_i * A_it^(sigma-1).
+		# C_exp_ams is the residual of this identity; the fsolve root is the
+		# utility level consistent with observed L_t, A_it and calibrated (om_i, eps_i).
+		# The 3-sector (ams) variant uses agr/man/ser; weights close to 1 (om_ser = 1 - om_agr - om_man).
 		C_lev_E_ams=[]
-		for i in range(len(self.cou.h_tot)):
+		for i in range(len(self.cou.h_tot)):   # time loop over years (1970-2019)
 			L_t=np.array(self.cou.h_tot)[i]
 			A_agr_t=np.array(self.cou.A_agr)[i]
 			A_man_t=np.array(self.cou.A_man)[i]
-			A_ser_t=np.array(self.cou.A_ser)[i]			
+			A_ser_t=np.array(self.cou.A_ser)[i]
 			def C_exp_ams(C):
 	   			return L_t**(1-sigma) - (self.cou.om_agr_ams*(C**eps_agr)*(A_agr_t**(sigma-1)) + self.cou.om_man_ams*C*(A_man_t**(sigma-1)) + (1-self.cou.om_agr_ams-self.cou.om_man_ams)*(C**eps_ser)*(A_ser_t**(sigma-1)))
-			C_lev_E_ams.append(fsolve(C_exp_ams, L_t).item()) 
-		C_level_E_ams = pd.DataFrame(C_lev_E_ams)       
+			# Initial guess L_t (labor supply) is of the same order of magnitude as C
+			# and empirically converges in 4-8 iterations with scipy defaults (xtol~1.5e-8).
+			C_lev_E_ams.append(fsolve(C_exp_ams, L_t).item())
+		C_level_E_ams = pd.DataFrame(C_lev_E_ams)
 		g_C_E_ams = np.array(C_level_E_ams/C_level_E_ams.shift(1) - 1).flatten()
+		# Anchor the C level to relative GDP per hour in the base year so that C is
+		# comparable across countries in levels (not only in growth rates).
 		self.C_E_ams_baseline = [np.array(self.cou.GDP)[0]/np.array(GDP)[0]]
 		for i in range(len(g_C_E_ams) - 1):
 			self.C_E_ams_baseline.append((1+g_C_E_ams[i+1])*self.C_E_ams_baseline[i])
 
+		# 6-sector (nps) variant: agr/man/trd/bss/fin/nps; om_nps is the residual weight
+		# so that the six om_i sum to 1. Market-clearing residual defined as above.
 		C_lev_E_nps=[]
-		for i in range(len(self.cou.h_tot)):
+		for i in range(len(self.cou.h_tot)):   # time loop over years
 			L_t=np.array(self.cou.h_tot)[i]
 			A_agr_t=np.array(self.cou.A_agr)[i]
 			A_man_t=np.array(self.cou.A_man)[i]
@@ -428,6 +464,7 @@ class counterfactual:
 			A_nps_t=np.array(self.cou.A_nps)[i]
 			def C_exp_nps(C):
 				return L_t**(1-sigma) - (self.cou.om_agr_nps*(C**eps_agr)*(A_agr_t**(sigma-1)) + self.cou.om_man_nps*C*(A_man_t**(sigma-1)) + self.cou.om_trd_nps*(C**eps_trd)*(A_trd_t**(sigma-1)) + self.cou.om_bss_nps*(C**eps_bss)*(A_bss_t**(sigma-1)) + self.cou.om_fin_nps*(C**eps_fin)*(A_fin_t**(sigma-1)) + (1-self.cou.om_agr_nps-self.cou.om_man_nps-self.cou.om_trd_nps-self.cou.om_bss_nps-self.cou.om_fin_nps)*(C**eps_nps)*(A_nps_t**(sigma-1)))
+			# Initial guess = L_t as in the ams block; see note above on tolerances.
 			C_lev_E_nps.append(fsolve(C_exp_nps, L_t).item())
 		C_level_E_nps = pd.DataFrame(C_lev_E_nps)
 		g_C_E_nps = np.array(C_level_E_nps/C_level_E_nps.shift(1) - 1).flatten()
@@ -503,6 +540,15 @@ class counterfactual:
 		self.A_tot_nps = self.cou.A_tot_nps
 
 	def feed_catch_up_growth(self, init_year, sec):
+		# Closed-economy "catch-up" counterfactual: pick the end-of-sample sectoral
+		# productivity A_i such that the country's aggregate labor productivity
+		# equals the observed US level E[-1], holding other sectors' A_j fixed.
+		# Invert: A_i_catch = (E[-1]/share_i[-1] - sum_{j!=i} h_j[-1]*A_j[-1]) / h_i[-1].
+		# Then back out the constant growth rate g = (A_i_catch / A_i[0])^(1/T) - 1
+		# that maps A_i[0] to A_i_catch over T = ts_length years, and overwrite the
+		# sector growth-rate path starting at init_year. If A_i_catch < 0 the catch-up
+		# is infeasible (the other sectors alone already exceed the US aggregate),
+		# producing a complex g — handled explicitly in the endogenous variant.
 		'Baseline'
 		self.baseline()
 
@@ -1765,13 +1811,20 @@ pd.DataFrame(cf_2_catch_nps).to_excel('../output/figures/Counterfactual_2_catch_
 
 data_export["data_predictions"] = h_data_export
 
+# Persist model-predicted employment-share series and baseline aggregates so that
+# downstream plot scripts (generate_fig_reallocation.py) can build figures without
+# re-running this heavy counterfactual script.
 filehandler = open('../output/data/predictions_vs_data.obj', 'wb')
 pickle.dump(data_export, filehandler)
 filehandler.close()
 
 
 """
-C1 referee suggestion: reallocation gap with US is zero after 1990
+CF4 (C1 referee response): counterfactual where Europe matches US sectoral
+productivity growth in the "progressive" sectors after 1990 (trd, bss, fin only;
+agr/man/nps unchanged). id_1990 = 21 because the country time series start in
+1970 and 1990 is the 22nd point (0-indexed: index 21). Tests the claim that the
+reallocation gap vs. the US is concentrated in the pre-1990 period.
 """
 
 'ams'

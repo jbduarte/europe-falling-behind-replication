@@ -1,13 +1,27 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
-Filename: model_test_europe_open.py
-Description: This program uses the BDS model with calibrated parameters to  test our model 
-    predictions for Europe, which constitutes a test of our theory.
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        model_test_europe_open.py
+Purpose:     Apply the US-calibrated open-economy (exogenous-trade) model to
+             European economies. Like model_test_europe.py but now sectoral net
+             exports are fed in from OECD ICIO data, so each country's model
+             solution has to absorb trade in the resource constraint.
+Pipeline:    Step 5/19 — Open-economy (exogenous trade) test on Europe.
+Inputs:      ../data/euklems_2023.csv (EUKLEMS 2023 VA_Q, H by country-sector)
+             ../data/io_panel.xlsx and ../data/exp_imp_aggregate_panel.xlsx
+             (OECD ICIO sectoral and aggregate trade flows)
+             ../data/raw/OECD_GDP_ph.xlsx (OECD GDP per hour, PPP USD)
+             US preference parameters (sigma, eps_*) from model_calibration_USA.py
+             and US open-economy aggregates from model_calibration_USA_open.py.
+Outputs:     The model_country class with open-economy solve methods, country
+             instances (AUT, BEL, DEU, DNK, ESP, FIN, FRA, GBR, ITA, NLD, SWE, ...),
+             and EU4 / EU13 / core / periphery aggregates. Trade-version analogues
+             of the closed-economy outputs used by trade_counterfactuals.py.
+Dependencies: model_calibration_USA.py (Step 1) and model_calibration_USA_open.py (Step 4).
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -20,7 +34,9 @@ import pandas as pd
 rc('text', usetex=True)
 rc('font', family='serif')
 
-# The following string runs the calibration of the model on the US, and imports the parameter values that are used in this program. Also, it imports US GDP, needed in the European sectoral productivity measurement.
+# Import calibrated preference parameters (closed-economy) and US open-economy
+# aggregates. US GDP and productivity aggregates are needed to measure European
+# sectoral productivity in comparable units.
 from model_calibration_USA import sigma, eps_agr, eps_trd, eps_fin, eps_bss, eps_nps, eps_ser
 from model_calibration_USA_open import GDP_ph, E, A_tot, \
     share_agr, share_man, share_trd, share_bss, share_fin, share_nps, share_ser, \
@@ -43,8 +59,14 @@ GDP_ph_USA, E_USA = GDP_ph, E
 ----------------------------
 '''
 
-class model_country: 
-    "Non-Homothetic CES Preferences and Technology of Production Linear in Labor"
+class model_country:
+    """Country-level open-economy model (EXOGENOUS trade). Preferences (sigma,
+    eps_*) are fixed at the US-calibrated values; sectoral net-export paths
+    nx_i_E are taken directly from OECD ICIO data and plugged into the
+    sectoral resource constraint. This is the Section 6 exogenous-trade
+    specification; it isolates the mechanical effect of trade absorption on
+    employment shares without the model-implied trade responses of the
+    endogenous-trade version."""
     def __init__(self, country_code, sigma=sigma, eps_agr=eps_agr, eps_trd=eps_trd, eps_fin=eps_fin, eps_bss=eps_bss, eps_nps=eps_nps, eps_ser=eps_ser):
 
         'Initialize the Parameters'
@@ -323,7 +345,10 @@ class model_country:
             self.Y_ph.append((1 + self.g_GDP_ph[i+1])*self.Y_ph[i])
             self.year.append(t_0 + i + 1)
                     
-        'Calibration ams'
+        'Back out country-specific CES weights Omega_i from initial-period'
+        'employment shares in the OPEN economy: each share equals the CES'
+        'weight plus the trade wedge E^(1-sigma)*(1/A_i)*nx_i_E/p_i, so the'
+        'weights are re-identified to match shares NET of that wedge.'
         def ces_weights_ams(p):
             omega_agr, omega_man = p
             GAP_init = np.array(self.GDP_ph)[0]/np.array(GDP_ph_USA)[0]
@@ -336,7 +361,9 @@ class model_country:
             return np.reshape(omegas, (2,))
         self.om_agr_ams, self.om_man_ams = fsolve(ces_weights_ams, (0.5,0.5))
 
-        'Calibration ams: closed'
+        'Counterfactual closed-economy CES weights: set nx_i_E = 0 so weights'
+        'equal observed shares directly. Used for decompositions that shut'
+        'off the trade wedge while keeping preferences fixed.'
         def ces_weights_ams_closed(p):
             omega_agr, omega_man = p
             GAP_init = np.array(self.GDP_ph)[0]/np.array(GDP_ph_USA)[0]

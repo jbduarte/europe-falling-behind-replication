@@ -1,10 +1,20 @@
 """
-=======================================================================================
-EU-15 shift-share decomposition (Tables A.6, A.7).
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        table_ss_eu15_appendix.py
+Purpose:     Shift-share decomposition of aggregate labour productivity growth for
+             the U.S., the EU-15 aggregate, and the United Kingdom (GBR), over
+             1970-2019 and 1995-2019. Provides the broader-sample robustness
+             counterpart to the EU4 main-text decomposition.
+Pipeline:    Step 16/19 — Generates Tables A.6 (1970-2019) and A.7 (1995-2019).
+Inputs:      ../data/euklems_2023.csv (sectoral VA, VA_Q, H by country, year, sector).
+Outputs:     ../output/tables/table_c2_new.tex (Table A.6),
+             ../output/tables/table_c3_new.tex (Table A.7).
+Dependencies: None — self-contained robustness companion to utils.table_1_ss_eu4.
 """
 
 import pandas as pd
@@ -19,7 +29,9 @@ data = pd.read_csv('../data/euklems_2023.csv', index_col=[0, 1])
 data.rename(index={'US': 'USA'}, inplace=True)
 
 
-# compute Total
+# Rebuild 'tot' as the sum of the six base sectors (agr, man, bss, fin, trd, nps).
+# 'ser' and 'prs' are alternate composite labels in EUKLEMS that overlap the
+# base sectors; dropping them keeps the aggregation a clean partition.
 data = data.reset_index()
 data = data[data.sector != "tot"]
 sector_filter = (data.sector != 'ser') & (data.sector != 'prs')
@@ -34,16 +46,15 @@ final_data = pd.concat((final_data, data_total), axis=0)
 final_data = final_data.sort_values(['country', 'sector', 'year'])
 data = final_data.copy()
 
-'Labor Productivity'
+# Labor productivity = real value added per hour, scaled by 100 to match
+# the EUKLEMS published indices.
 data['y_l'] = (data['VA_Q'] / data['H']) * 100
 
-'US data'
+# Country slices. 'EU15' is the EUKLEMS pre-aggregated region (15 pre-2004
+# member states); 'GB' is reported separately because Brexit motivates a
+# UK-only robustness column.
 data_us = data.loc[data.country == 'USA']
-
-'EU15 data'
 data_eu = data.loc[data.country == 'EU15']
-
-'GBR data'
 data_gbr = data.loc[data.country == 'GB']
 
 # Compute emp. shares
@@ -93,18 +104,21 @@ l_2019_gbr_nps = data_gbr_nps.loc[data_gbr_nps.year == 2019, ["sector", "LS"]]
 
 def shift_share(lp_0, lp_T, l_0, l_T):
     """
-    all vectors with values for all sectors
+    Shift-share decomposition of aggregate labour productivity growth.
+    See utils.table_1_ss_eu4.shift_share for the full formula. Inputs are 1-D
+    arrays of length = number of sectors; returns dict with LP_growth,
+    within_effect and shift_effect as sector-level vectors.
     """
-    # Compute aggregate LP growth
+    # Aggregate LP in base and final years (sector-level products)
     LP_0 = (lp_0 * l_0)
     LP_T = (lp_T * l_T)
 
     LP_growth = (LP_T - LP_0)
 
-    # Within-sector productivity growth effect
+    # Within-sector productivity growth effect (shares held fixed at base year)
     within_growth = ((lp_T - lp_0) * l_0)
 
-    # Shift effect
+    # Reallocation (shift) effect, including the interaction term
     shift_growth = (((l_T - l_0) * lp_0) + ((l_T - l_0) * (lp_T - lp_0)))
 
     return {"LP_growth": LP_growth, "within_effect": within_growth, "shift_effect": shift_growth}
@@ -128,6 +142,7 @@ ss_gbr = shift_share(np.ones(6),
             l_1970_gbr_nps['LS'].values,
             l_2019_gbr_nps['LS'].values)
 
+# 49-year annualisation horizon: 1970 to 2019 (Table A.6 panel).
 def annualized(x):
     return ((x) ** (1 / 49) - 1) * 100
 
@@ -282,6 +297,7 @@ ss_gbr = shift_share(A_1995_gbr,
             l_1995_gbr_nps['LS'].values,
             l_2019_gbr_nps['LS'].values)
 
+# 24-year annualisation horizon: 1995 to 2019 (Table A.7 panel).
 def annualized(x):
     return ((x) ** (1 / 24) - 1) * 100
 

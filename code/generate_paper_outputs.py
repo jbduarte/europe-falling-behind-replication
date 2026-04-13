@@ -1,21 +1,31 @@
 """
-=======================================================================================
-Generate Paper Figures and Tables
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-
-This is the final step in the pipeline. It:
-  1. Generates endogenous trade model outputs (Figure 6, Table 6, Figure A.4)
-  2. Generates Figure 5 (trade openness by sector)
-  3. Consolidates all pipeline outputs with paper-consistent naming
-
-Requires: Steps 1-9 of master.py to have been run first.
+File:        generate_paper_outputs.py
+Purpose:     Final-stage consolidation script. (i) Produces the endogenous-trade
+             outputs that appear in the paper (Figure 6 comparison plot, Table 6
+             endogenous-trade counterfactual, Figure A.4 test-of-model plot);
+             (ii) produces Figure 5 fig_cfs panel; (iii) copies every figure and
+             LaTeX table generated upstream to ../output/figures/ and
+             ../output/tables/ under the paper's canonical names
+             (figure_1.pdf, ..., table_2a.tex, ..., table_A10.tex).
+Pipeline:    Step 19/19 — Consolidate outputs with paper-consistent naming.
+Inputs:      Upstream outputs from Steps 1-18: counterfactual tables produced by
+             utils.* modules and by counterfactuals/trade_counterfactuals scripts,
+             plus the endogenous-trade calibration and EU objects.
+Outputs:     ../output/figures/figure_<N>.pdf and ../output/tables/table_<N>.tex
+             for every headline and appendix artifact in the manuscript. Also
+             ../output/figures/fig_2_open_endo.pdf, fig_test_EUR_endo.pdf,
+             tab_trade_cf_endo.tex, and fig_cfs.pdf as intermediates.
+Dependencies: Steps 1-18 of the master pipeline must have completed.
 
 Usage:
     cd code
     python generate_paper_outputs.py
-=======================================================================================
 """
 
 import sys
@@ -31,9 +41,16 @@ from matplotlib import rc
 rc("text", usetex=True)
 rc("font", family="serif")
 
+# NOTE on side effects: the imported modules execute their full calibration /
+# model-test pipelines at import time (they were originally written as scripts).
+# This block can therefore take several minutes and emits a lot of stdout. It
+# is intentional: by the end of the imports below, every U.S. and European
+# country object has been solved and the module-level series referenced
+# further down (share_*_nps, A_tot_nps, ...) are populated.
 print("Importing endogenous model modules (this triggers calibration)...")
 
-# US parameters
+# U.S. structural parameters: price elasticity sigma plus the sectoral income
+# elasticities eps_*. Used by downstream scripts but kept here for cross-checks.
 from model_calibration_USA import (
     sigma,
     eps_agr,
@@ -159,7 +176,11 @@ print("Imports complete. Computing derived variables...")
 # COMPUTE DERIVED VARIABLES
 # ==============================================================================
 
-# --- US closed-economy aggregate productivity (NPS model) ---
+# --- U.S. closed-economy aggregate productivity (six-sector "NPS" model) ---
+# Implicit aggregator: A_tot = sum_i (l_i * A_i), with l_i the
+# closed-economy employment shares predicted by the model. List
+# comprehension (rather than np.dot) preserves the input list types coming
+# from the upstream script.
 A_tot_nps_closed = [
     sum(x)
     for x in zip(
@@ -172,7 +193,10 @@ A_tot_nps_closed = [
     )
 ]
 
-# --- EUR4 open-economy aggregate productivity (NPS model) ---
+# --- EUR4 open-economy aggregate productivity ---
+# Country-level A_tot_nps weighted by total hours, divided by EU4 hours, gives
+# the hours-weighted EU4 aggregate. Same convention used elsewhere for EU4
+# aggregates so the resulting series is directly comparable to the U.S. line.
 EUR4_A_tot_nps_open = (
     np.array(DEU.A_tot_nps).flatten() * np.array(DEU.h_tot).flatten()
     + np.array(FRA.A_tot_nps).flatten() * np.array(FRA.h_tot).flatten()
@@ -223,7 +247,8 @@ EUR13_A_tot_nps_closed = (
     + np.array(SWE.A_tot_nps_closed).flatten() * np.array(SWE.h_tot).flatten()
 ) / EUR13_h_tot
 
-years = DEU.year  # common year vector
+# All countries share the same EUKLEMS year grid; pick one for plotting axes.
+years = DEU.year
 
 
 # ==============================================================================
@@ -237,12 +262,17 @@ plt.subplots_adjust(wspace=0.05)
 fig.set_figheight(5)
 fig.set_figwidth(10)
 
-# --- Left panel: Employment shares scatter ---
+# --- Left panel: Employment shares, data (x-axis) vs model (y-axis) ---
+# Filled diamonds (US) and circles (EUR4) represent the open-economy
+# specification; their hollow counterparts are the closed-economy fit. A 45°
+# line lets the reader judge fit at a glance.
 ax = plt.subplot(1, 2, 1)
 
-# Sectors to plot (nps commented out to match exogenous version)
+# nps (non-personal services) is excluded so the panel matches the layout of
+# the exogenous-trade Figure 2 in the appendix; it would compress the other
+# five sectors in the corner of the plot.
 sectors = ["agr", "man", "trd", "bss", "fin"]
-# US data shares (x-axis for US points)
+# 2019 (last-period) U.S. employment shares, used as the x-axis for U.S. points.
 us_data = {
     "agr": np.array(share_agr)[-1],
     "man": np.array(share_man)[-1],
@@ -657,9 +687,11 @@ print("  Saved: output/figures/fig_test_EUR_endo.pdf")
 print("Generating trade counterfactual table...")
 
 # --- Panel A: CF2 catch-up ratios ---
-# Read endogenous CF2 results from Excel files
-# Format: row 0 = country headers, rows 1-6 = sector data (agr, man, trd, fin, bss, nps)
-# EU4 is a COLUMN (not a row)
+# The endogenous-trade CF2 workbooks are written by trade_counterfactuals_endogenous.py
+# with sectors-as-rows / regions-as-columns (no header inference). The reader
+# below tolerates either label spelling ('EU4' or 'EUR4') and looks the EU4
+# column up dynamically rather than hard-coding a column index, since column
+# order may change if regions are added/removed upstream.
 cf2_model_file = "../output/figures/Counterfactual_2_catch_nps_endo_trade.xlsx"
 cf2_ss_file = "../output/figures/Counterfactual_2_catch_nps_ss_endo_trade.xlsx"
 
@@ -667,7 +699,7 @@ if os.path.exists(cf2_model_file) and os.path.exists(cf2_ss_file):
     cf2_model = pd.read_excel(cf2_model_file, header=None)
     cf2_ss = pd.read_excel(cf2_ss_file, header=None)
 
-    # Find EU4 column index from header row
+    # Locate the EU4 column from the header row (row 0).
     header_row = [str(x).strip() for x in cf2_model.iloc[0, :].values]
     eu4_col = None
     for j, h in enumerate(header_row):
@@ -675,7 +707,7 @@ if os.path.exists(cf2_model_file) and os.path.exists(cf2_ss_file):
             eu4_col = j
             break
 
-    # Build sector-to-row mapping from column 0
+    # Build sector-to-row index from column 0 (sector codes).
     sec_rows = {}
     for i in range(1, len(cf2_model)):
         sec_name = str(cf2_model.iloc[i, 0]).strip().lower()
@@ -701,8 +733,12 @@ else:
     cf2_man_model = cf2_trd_model = cf2_bss_model = np.nan
     cf2_man_ss = cf2_trd_ss = cf2_bss_ss = np.nan
 
-# --- Panel B: Trade cure net exports ---
-# Try reading from saved Excel file first (from trade_counterfactuals_endogenous.py)
+# --- Panel B: Trade-cure net exports ---
+# Two paths: (i) read pre-computed NX from the Excel file written by the
+# upstream find_nx routine, or (ii) recompute from country object attributes
+# if find_nx was just executed in the current Python session. Path (i) is
+# preferred because it avoids re-running the slow optimisation; path (ii)
+# is a fallback for interactive / partial reruns.
 trade_cure_file = "../output/figures/trade_cure_nx_endo.xlsx"
 trade_cure_available = False
 
@@ -723,7 +759,9 @@ else:
     trade_cure_available = False
 
 if trade_cure_available and not os.path.exists(trade_cure_file):
-    # Compute from country objects (find_nx was run in this session)
+    # Fallback path: aggregate the per-country nx_*_E and nx_cf_* attributes
+    # to EU4 using last-period hours weights. [-1] indexing pulls the 2019
+    # observation (the year reported in Table 6).
     EUR4_nx_agr_E = (
         np.array(DEU.h_tot)[-1] * np.array(DEU.nx_agr_E)[-1]
         + np.array(GBR.h_tot)[-1] * np.array(GBR.nx_agr_E)[-1]
@@ -761,7 +799,9 @@ if trade_cure_available and not os.path.exists(trade_cure_file):
         + np.array(ITA.h_tot)[-1] * np.array(ITA.nx_nps_E)[-1]
     ) / EUR4_h_tot[-1]
 
-    # Counterfactual net exports
+    # Counterfactual net exports under the trade-cure scenario (sectoral
+    # productivity gap closed; nx_cf_* are written to the country objects
+    # by find_nx in trade_counterfactuals_endogenous.py).
     EUR4_nx_cf_agr = (
         np.array(DEU.h_tot)[-1] * np.array(DEU.nx_cf_agr)[-1]
         + np.array(GBR.h_tot)[-1] * np.array(GBR.nx_cf_agr)[-1]
@@ -815,7 +855,7 @@ if not trade_cure_available:
     EUR4_nx_cf_agr = EUR4_nx_cf_man = EUR4_nx_cf_trd = np.nan
     EUR4_nx_cf_bss = EUR4_nx_cf_fin = EUR4_nx_cf_nps = np.nan
 
-# Total observed and counterfactual net exports
+# Sum across sectors gives the EU4 trade balance under each scenario.
 EUR4_nx_tot_E = (
     EUR4_nx_agr_E
     + EUR4_nx_man_E
@@ -835,14 +875,16 @@ EUR4_nx_tot_cf = (
 
 
 def fmt_val(v, decimals=2):
-    """Format a value for the table, handling NaN."""
+    """Format a numeric value for the LaTeX table. Returns "---" for NaN so
+    the table prints cleanly even when the trade-cure section is unavailable."""
     if np.isnan(v):
         return "---"
     return f"{v:.{decimals}f}"
 
 
 def fmt_pct(v):
-    """Format a percentage value."""
+    """Same as fmt_val but converts the value to a percentage (×100). Used
+    for the net-exports rows in Panel B, which are stored as ratios."""
     if np.isnan(v):
         return "---"
     return f"{100*v:.2f}"
@@ -964,7 +1006,10 @@ print("\nEndogenous trade model outputs generated.")
 # ==============================================================================
 print("Figure 5 generated by generate_fig_opennes.py (Step 11).")
 
-if False:  # Old inline Figure 5 code — replaced by generate_fig_opennes.py
+# `if False:` keeps the legacy inline implementation visible (and discoverable
+# via grep) but inert. Retained as documentation of the original Figure 5
+# pipeline; do not remove until the standalone script has shipped a release.
+if False:
     import statsmodels.api as sm
 
     io_data = pd.read_excel("../data/io_panel.xlsx", index_col=[0, 1], engine="openpyxl")
@@ -984,12 +1029,16 @@ sector_styles = {
 
 
 def compute_trade_openness(io_data, agg_data, country):
-    """Compute (Exports + |Imports|)/GDP by sector, HP-filtered."""
+    """Sectoral trade openness ratio (Exports + |Imports|) / GDP, smoothed
+    with the HP filter at lambda=100 (annual-data convention used elsewhere
+    in the paper).
+    Returns a dict keyed by sector code; raw imports are stored as negative
+    flows in io_data, so the (-1) flips them to absolute values before summing.
+    """
     openness = {}
     for sec in sectors_io:
         sec_data = io_data.loc[country].loc[io_data.loc[country, "sec"] == sec]
         gdp = agg_data.loc[country, "gdp"]
-        # impo is stored as negative, so (-1)*impo = |imports|
         raw = (sec_data["expo"].values + (-1) * sec_data["impo"].values) / gdp.values
         _, openness[sec] = sm.tsa.filters.hpfilter(raw, 100)
     return openness
@@ -998,7 +1047,12 @@ def compute_trade_openness(io_data, agg_data, country):
 try:
     us_openness = compute_trade_openness(io_data, agg_data, "USA")
 
-    # EUR4: hours-weighted average of trade openness
+    # EU4 openness: hours-weighted average across DEU+FRA+GBR+ITA (same
+    # convention as the EU4 sectoral aggregates throughout the paper).
+    # Trim to the shortest sector series (`n = min(len(hp), len(h_c))`)
+    # because the IO and EUKLEMS panels can have different end years, and
+    # use np.where to avoid divide-by-zero in the unlikely event that
+    # total hours sum to zero in some early year.
     eur4_countries_io = {"DEU": DEU, "FRA": FRA, "GBR": GBR, "ITA": ITA}
     eur4_openness = {}
     for sec in sectors_io:
@@ -1122,7 +1176,9 @@ import shutil
 os.makedirs("../output/figures", exist_ok=True)
 os.makedirs("../output/tables", exist_ok=True)
 
-# Figure mapping: source -> paper name
+# Source-to-paper-name map. Internal filenames carry historical / development
+# names (fig_2_open_endo, fig_cfs, ...); the paper references them as
+# figure_<N>.pdf. Mapping is one-to-one for figures and one-to-one for tables.
 figure_map = {
     # Main figures
     "fig_1.pdf": "figure_1.pdf",
@@ -1130,12 +1186,15 @@ figure_map = {
     "fig_cfs.pdf": "figure_3.pdf",
     "fig_opennes.pdf": "figure_5.pdf",
     "fig_2_open_endo.pdf": "figure_6.pdf",
-    "fig_test_EUR_endo.pdf": "figure_A4.pdf",
     # Appendix figures
     "fig_USA_Ai_appendix.pdf": "figure_A1.pdf",
     "fig_calibration_USA.pdf": "figure_A2.pdf",
     "fig_3.pdf": "figure_4.pdf",
     "fig_2_ams.pdf": "figure_A3.pdf",
+    # figure_A4.pdf is the 6-panel closed-economy appendix fit (EU4/GBR/EU15),
+    # generated by model_test_europe.py. An orphan output
+    # fig_test_EUR_endo.pdf is also produced here but is not referenced in the
+    # paper TeX, so it is not mapped.
     "fig_test_EUR_appendix.pdf": "figure_A4.pdf",
     "fig_test_EUR_2_appendix.pdf": "figure_A5.pdf",
 }
@@ -1148,7 +1207,6 @@ table_map = {
     "../output/data/table_cf2_EU4.tex": "table_2b.tex",
     "../output/tables/table_3.tex": "table_3.tex",
     "../output/tables/table_3.xlsx": "table_3.xlsx",
-    "../output/figures/corr_lp_tfp_klems.tex": "table_4.tex",
     "../output/figures/corr_lp_tfp_klems.tex": "table_4.tex",
     "../data/beta_last_period_results.xlsx": "table_5.xlsx",
     "../output/figures/tab_trade_cf_endo.tex": "table_6.tex",
@@ -1186,15 +1244,16 @@ for src_path, dst_name in table_map.items():
 
 print(f"\nConsolidation complete: {copied} files copied with paper-consistent names.")
 
-# Clean up: remove intermediate files, keep only paper-named outputs
+# Strip development-named PDFs/TeX so the output folder contains only the
+# paper-named artefacts that map onto the manuscript. Excel and pickled object
+# files are preserved because downstream re-runs of the standalone scripts
+# (utils.cfs, generate_paper_outputs) read them back as inputs.
 print("\nCleaning up intermediate files...")
 import re
 for folder in ["../output/figures", "../output/tables"]:
     for f in os.listdir(folder):
-        # Keep paper-named files: figure_N, table_N, table_AN
         if re.match(r'^(figure|table)_[0-9A]', f):
             continue
-        # Keep data intermediates needed across pipeline runs
         if f.endswith(".xlsx") or f.endswith(".obj"):
             continue
         fpath = os.path.join(folder, f)

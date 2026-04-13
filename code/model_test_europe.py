@@ -1,13 +1,26 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
-Filename: model_test_europe.py
-Description: This program uses the BDS model with calibrated parameters to  test our model 
-    predictions for Europe, which constitutes a test of our theory.
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        model_test_europe.py
+Purpose:     Apply the US-calibrated closed-economy model to European economies.
+             Defines the model_country class that, given a country code, recovers
+             sectoral productivity series from data and generates model-implied
+             sectoral employment shares. Builds EU4, EU15, core, and periphery
+             aggregates used throughout the paper.
+Pipeline:    Step 2/19 — Closed-economy model test on Europe.
+Inputs:      ../data/euklems_2023.csv (EUKLEMS 2023 VA_Q and H by country-sector)
+             ../data/raw/OECD_GDP_ph.xlsx (OECD GDP per hour, PPP USD)
+             Preference parameters (sigma, eps_*) and US aggregates (GDP, E,
+             A_tot, share_*, A_tot_ams, A_tot_nps) from model_calibration_USA.py.
+Outputs:     The model_country class and EU aggregates EUR4_*, EUR15_*, EURCORE_*,
+             EURPERI_* (hours h_tot, productivities A_tot/A_tot_ams/A_tot_nps,
+             employment shares share_*, share_*_ams_m, share_*_nps_m). These feed
+             all downstream counterfactual and figure scripts.
+Dependencies: model_calibration_USA.py (Step 1).
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -20,7 +33,9 @@ import pandas as pd
 rc('text', usetex=True)
 rc('font', family='serif')
 
-# The following string runs the calibration of the model on the US, and imports the parameter values that are used in this program. Also, it imports US GDP, needed in the European sectoral productivity measurement.
+# Import calibrated preference parameters and US aggregates from Step 1.
+# US GDP and productivity aggregates are needed to measure European sectoral
+# productivity in comparable units.
 from model_calibration_USA import sigma, eps_agr, eps_trd, eps_fin, eps_bss, eps_nps, eps_ser, \
     GDP, E, A_tot, \
     share_agr, share_man, share_trd, share_bss, share_fin, share_nps, share_ser, \
@@ -33,8 +48,17 @@ from model_calibration_USA import sigma, eps_agr, eps_trd, eps_fin, eps_bss, eps
 ----------------------------
 '''
 
-class model_country: 
-    "Non-Homothetic CES Preferences and Technology of Production Linear in Labor"
+class model_country:
+    """Country-level non-homothetic CES model with linear-in-labor production.
+
+    Preference parameters (sigma, eps_*) are held fixed at the US-calibrated
+    values (Step 1) so Europe's fit is a genuine out-of-sample test. The only
+    country-specific objects are (i) the CES weights Omega_i, backed out from
+    each country's initial-period employment shares via fsolve on the CES
+    share identity, and (ii) the sectoral productivity paths A_i,t, which
+    inherit the observed growth rates of sectoral labor productivity. The
+    initial-period level gap GDP^c_0 / GDP^US_0 is imposed on both C and on
+    every A_i to place the country in comparable units to the US."""
     def __init__(self, country_code, sigma=sigma, eps_agr=eps_agr, eps_trd=eps_trd, eps_fin=eps_fin, eps_bss=eps_bss, eps_nps=eps_nps, eps_ser=eps_ser):
 
         'Initialize the Parameters'
@@ -184,6 +208,11 @@ class model_country:
         ---------------------------------------------
         '''
 
+        # Initial-period normalization: set E_0 (and later A_i,0) equal to the
+        # country's GDP-per-hour LEVEL relative to the US initial period,
+        # GDP^c_0 / GDP^US_0. This anchors European productivity and income
+        # in comparable PPP units so the model captures both the level gap
+        # and the subsequent growth dynamics.
         t_0 = np.array(data.index)[0]
         self.E=[np.array(self.GDP)[0]/np.array(GDP)[0]]
         self.year = [t_0]
@@ -192,7 +221,11 @@ class model_country:
             self.E.append((1 + self.g_GDP[i+1])*self.E[i])
             self.year.append(t_0 + i + 1)
                     
-        'Calibration ams'
+        'Back out country-specific CES weights Omega_i by requiring the'
+        'model-implied employment shares in the INITIAL period to equal the'
+        'observed initial-period data shares, given the GAP_init level of'
+        'the CES consumption index. Two moments (agr and man shares) pin down'
+        'the two free weights (Omega_ser = 1 - Omega_agr - Omega_man).'
         def ces_weights_ams(p):
             omega_agr, omega_man = p
             GAP_init = np.array(self.GDP)[0]/np.array(GDP)[0]
@@ -204,7 +237,8 @@ class model_country:
             return np.reshape(omegas, (2,))
         self.om_agr_ams, self.om_man_ams = fsolve(ces_weights_ams, (0.5,0.5))
 
-        'Calibration nps'
+        'Six-sector analogue: five initial-period share moments (agr, man,'
+        'trd, bss, fin) pin down five CES weights; Omega_nps is the residual.'
         def ces_weights_nps(p):
             omega_agr, omega_man, omega_trd, omega_bss, omega_fin = p
             GAP_init = np.array(self.GDP)[0]/np.array(GDP)[0]
@@ -288,7 +322,9 @@ class model_country:
         'Employment Share in the Rest of Services'
         return ((1-self.om_agr_nps-self.om_man_nps-self.om_trd_nps-self.om_bss_nps-self.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)))/(self.labor_demand_nps(C, A_agr, A_man, A_trd, A_bss, A_fin, A_nps))
         
-    'Growth of C, consistent with Theory For Each Model'
+    'Country-level non-homothetic CES index recovered from the relative-'
+    'labor equation, then initialized at the US-relative GDP level so C and'
+    'the sectoral A_i paths live in the same units.'
     def C_index(self, om_i, om_m, li_lm, pi_pm, sigma, epsilon_i):
         C_level = ((om_m/om_i)*li_lm*(pi_pm**(sigma-1)))**(1/(epsilon_i-1))
         g_C = np.array(C_level/C_level.shift(1) - 1)

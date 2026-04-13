@@ -1,14 +1,26 @@
 import matplotlib
 matplotlib.use("Agg")
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
-Filename: facts.py
-Description: This program constructs tables and plots for the facts section of the paper
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        facts.py
+Purpose:     Build the motivating facts of the paper — Figure 1a (EU Big Four labour
+             productivity relative to the U.S., 1970-2018) and Figure 1b (sectoral
+             employment shares against log GDP per hour for trade, business and
+             financial services, U.S. vs. EU-15) — plus the Table 1 shift-share
+             decomposition objects (1995-2018).
+Pipeline:    Step 13/19 — Generates Figure 1 (motivating facts).
+Inputs:      ../data/euklems_2023.csv (sectoral VA, VA_Q, H, P for US + EU-15),
+             ../data/raw/OECD_GDP_ph.xlsx (OECD GDP per hour, USD),
+             ../data/penn_gdp.xlsx (Penn World Tables GDP).
+Outputs:     ../output/figures/fig_1a.pdf, ../output/figures/fig_1b.pdf.
+             Shift-share DataFrames (LP_growth_i, growth_effect_i,
+             reallocation_effect_i) are built in memory but not exported here.
+Dependencies: utils.construct_dataset_facts (helper for per-country panel build).
 """
 
 import matplotlib.pyplot as plt
@@ -23,11 +35,14 @@ plt.rcParams.update({
 
 data = pd.read_csv('../data/euklems_2023.csv', index_col=[0, 1]).reset_index()
 data.rename(columns={'level_0': 'country', 'level_1': 'year'}, inplace=True, errors='ignore')
-# Compute price deflator P = VA / VA_Q (2023 release does not include P directly)
+# The 2023 EUKLEMS release ships only nominal VA and chained-volume VA_Q; the
+# implicit sectoral price deflator P is recovered as the ratio of the two.
 data['P'] = data['VA'] / data['VA_Q']
 data_lp = pd.read_excel('../data/raw/OECD_GDP_ph.xlsx')
 
-# Construct dataset for all countries (US + EU-15 members)
+# Loop over the US plus all EU-15 members. EU15 is also kept as its own
+# row because EUKLEMS ships a pre-aggregated region with the same name —
+# useful as a cross-check on the country-level aggregation built later.
 countries = ["US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR", "IE", "IT", "LU", "NL", "PT", "ES", "SE", "GB"]
 countries_fulldata = []
 for country in countries:
@@ -41,6 +56,11 @@ Construct EU BIG 4 Labor Productivity
 big4 = ['DEU', 'ITA', 'GBR', 'FRA']
 rel_lp = np.empty((len(np.arange(1970, 2019)), 4))
 
+# Relative LP series = (GDP_per_hour_country / GDP_per_hour_USA), then smoothed
+# with the Ravn-Uhlig (2002) lambda=6.25 — the annual-data HP-filter constant
+# they derive from the standard quarterly value of 1600. Smoothing strips
+# business-cycle noise so that Figure 1a shows the long-run convergence
+# pattern (1995-2018 European fall-back).
 for i, country in enumerate(big4):
     filter = (data_lp["LOCATION"] == country) & (data_lp["MEASURE"] == "USD") & (data_lp["TIME"] <= 2018)
     filter_usa = (data_lp["LOCATION"] == "USA") & (data_lp["MEASURE"] == "USD") & (data_lp["TIME"] <= 2018)
@@ -73,20 +93,21 @@ gdp['gdp'] = gdp['gdp'] * 1_000_000
 markers = ['v', 'o']
 fig, ax = plt.subplots()
 
-# Pre-compute GDP per hour for each country, aligned by year
+# Build log GDP per hour for every country in the panel, on a common 1977-2018
+# year window. The inner merge guards against year mismatches between the PWT
+# GDP series and the EUKLEMS hours panel (some countries enter EUKLEMS later).
 gdp_per_hour = {}
 for i, c in enumerate(countries):
-    # Total hours from countries_fulldata, filtered to 'tot' sector
     tot = countries_fulldata[i].loc[countries_fulldata[i].sector == 'tot', ['year', 'H']].copy()
     tot = tot.rename(columns={'H': 'H_tot'})
-    # GDP from Penn tables
     gdp_c = gdp.loc[gdp.country == c, ['year', 'gdp']].copy()
-    # Merge on year to ensure alignment, then filter to 1977-2018
     merged = gdp_c.merge(tot, on='year', how='inner')
     merged = merged[(merged.year >= 1977) & (merged.year <= 2018)].sort_values('year')
     gdp_per_hour[i] = np.log(merged['gdp'].values / merged['H_tot'].values)
 
-# Helper to get sector employment shares aligned to the same years
+# Closure that returns one country's sectoral employment share series on the
+# same 1977-2018 grid as gdp_per_hour, so the Figure 1b scatter aligns x and y
+# observation-by-observation.
 def get_ls(i, sector):
     tot = countries_fulldata[i].loc[countries_fulldata[i].sector == 'tot', ['year']].copy()
     gdp_c = gdp.loc[gdp.country == countries[i], ['year']].copy()

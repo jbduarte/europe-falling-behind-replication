@@ -1,12 +1,24 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Buiatti and Duarte)
-Filename: model_calibration_USA.py
-Description: This program calibrates the BDS model and provides the test of the theory.
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        model_calibration_USA.py
+Purpose:     Calibrate the baseline closed-economy non-homothetic CES model on US
+             data: recover the price elasticity sigma, the sectoral non-homotheticity
+             parameters (eps_agr, eps_trd, eps_bss, eps_fin, eps_nps, eps_ser), and
+             the sectoral productivity levels (A_agr, A_man, ..., A_tot) that
+             rationalize observed US labor reallocation.
+Pipeline:    Step 1/19 — Baseline closed-economy calibration on US.
+Inputs:      ../data/euklems_2023.csv (EUKLEMS 2023, VA_Q and H by sector)
+             ../data/raw/OECD_GDP_ph.xlsx (OECD GDP per hour, constant PPP USD)
+Outputs:     Module-level variables imported downstream: sigma, eps_*, A_*, E,
+             GDP, share_* (sectoral employment shares), plus the 6-sector
+             aggregates A_tot_ams / A_tot_nps used for the "more aggregated" and
+             "no-personal-services" robustness specifications.
+Dependencies: None (this is the root of the closed-economy branch).
 """
 
 import matplotlib
@@ -172,7 +184,7 @@ share_c_ser_no_agm, share_ser_no_agm = sm.tsa.filters.hpfilter(
 
 """ 
 ------------------------
-	Parameretization 
+	Parameterization 
 ------------------------
 """
 
@@ -269,13 +281,19 @@ for i in range(int(ts_length)):
 	Calibration
 -------------------
 """
-# Step 1. Pick an arbirtrary value for Engel curve in agriculture from a grid
-# Step 2. Find price elasticity consistent in equation of relative labor of agricuture to manufacturing.
-# Step 3. Find Engel curve of services consistent with price elasticity from equation of relative labor equation of services to manufacturing.
-# Step 4. Compute the CES non-homothetic aggregator for the three sector model based on elasticities computed in steps 1-3.
-# Step 5. Store the residual between then CES non-homothetic aggregator and the index of GDP ph
-# Step 6. Find tuple of elasticities that minimize the squared residuals betweeen C and E.
-# Step 7. Compute the rest of Engel curves for all services
+# Identification strategy (Comin, Lashkari, Mestieri 2021 ECMA, adapted):
+# with linear-in-labor production y_i = A_i ell_i, the first-order conditions
+# of the non-homothetic CES deliver a log-linear relative-labor equation for
+# every sector i paired with the numeraire (manufacturing). We exploit two
+# moments of that equation in the terminal year:
+#   (i) Fix eps_ser at the Comin et al. (2021) Table 9 value (eps_ser = 1.2)
+#       and invert the services-vs-manufacturing equation for sigma.
+#   (ii) Given sigma, invert the i-vs-manufacturing equation for each remaining
+#        non-homotheticity eps_i (i in {agr, trd, bss, fin, nps}).
+# (The commented-out grid-search below was the previous strategy that treated
+#  eps_agr as free and minimized the residual between the induced CES
+#  consumption index C and measured real expenditure E; we keep it for
+#  reference but the published calibration uses the closed-form inversion.)
 
 """
 -----------------
@@ -283,7 +301,8 @@ for i in range(int(ts_length)):
 -----------------
 """
 
-"Price elasticity"
+"Price elasticity: closed-form inversion of the services-vs-manufacturing"
+"log relative-labor equation for sigma, given eps_s and terminal-year data."
 
 
 def sigma_ft(eps_s):
@@ -296,7 +315,10 @@ def sigma_ft(eps_s):
     return 1 - nom / den
 
 
-"Engel curve in services"
+"Sectoral non-homotheticity (income elasticity): closed-form inversion of"
+"the i-vs-manufacturing log relative-labor equation for eps_i, given sigma."
+"The name 'Engel curve' here refers to eps_i in the Comin et al. (2021)"
+"notation (i.e., the income-elasticity parameter, not a full Engel curve)."
 
 
 def eps_i_ft(sigma, rel_l, rel_om, rel_p):
@@ -305,7 +327,10 @@ def eps_i_ft(sigma, rel_l, rel_om, rel_p):
     return 1 + nom / den
 
 
-"Non-homothetic CES index"
+"Non-homothetic CES consumption index recovered from one relative-labor"
+"equation. Under linear-in-labor technology the sectoral FOC implies"
+"C^(eps_i-1) = (om_m/om_i) * (l_i/l_m) * (p_i/p_m)^(sigma-1); inverting"
+"this for C at every t yields an observable time series for the index."
 
 
 def C_index(om_i, li_lm, pi_pm, sigma, epsilon_i):
@@ -336,7 +361,8 @@ for i in range(len(x)):
 
 loc_min = np.where(np.array(tot_sq_err) == np.array(tot_sq_err).min())#Find least squared error	
 """
-"Elasticities"
+"Elasticities: fix services non-homotheticity, invert for sigma, then"
+"invert for the remaining eps_i (agr, trd, bss, fin, nps)."
 esp_ser = 1.2  # Comin et al. 2021, Table 9.
 sigma = sigma_ft(esp_ser)
 eps_agr = eps_i_ft(sigma, l_agr_l_man_last, (om_agr / om_man), p_agr_p_man_last)
@@ -372,7 +398,11 @@ print(
 
 
 class model_ams:
-    "Structural Transformation with Agriculture, Manufacturing and Services"
+    """Three-sector specification (agr, man, ser). With linear-in-labor
+    technology y_i = A_i ell_i, sectoral employment share equals expenditure
+    share: ell_i/L = omega_i = Omega_i * C^eps_i * A_i^(sigma-1) / sum_j(...),
+    consistent with Comin, Lashkari, Mestieri (2021). Manufacturing serves as
+    the numeraire sector with eps_man = 1."""
 
     def __init__(
         self,
@@ -396,7 +426,7 @@ class model_ams:
         ) = sigma, eps_agr, 1, eps_ser, om_agr, om_man, om_ser
 
     def labor_demand(self, C, A_agr, A_man, A_ser):
-        "total Labor Demand"
+        "Denominator (sum of un-normalized CES weights) that converts each sectoral weight into an employment (= expenditure) share."
         L = (
             self.om_agr * (C**self.eps_agr) * (A_agr ** (self.sigma - 1))
             + self.om_man * (C**self.eps_man) * (A_man ** (self.sigma - 1))
@@ -427,7 +457,10 @@ class model_ams:
 
 
 class model_nps:
-    "Agriculture, Manufacturing, Whole Sale and Retail Trade, Business Services, and the Rest of Services"
+    """Six-sector specification (agr, man, trd, bss, fin, nps). Same
+    non-homothetic CES + linear-in-labor structure as model_ams, with
+    services disaggregated into wholesale/retail trade, business services,
+    financial services, and non-progressive (personal) services."""
 
     def __init__(
         self,
@@ -477,7 +510,7 @@ class model_nps:
         )
 
     def labor_demand(self, C, A_agr, A_man, A_trd, A_bss, A_fin, A_nps):
-        "total Labor Demand"
+        "Sum of un-normalized CES weights (six-sector denominator)."
         L = (
             self.om_agr * (C**self.eps_agr) * (A_agr ** (self.sigma - 1))
             + self.om_man * (C**self.eps_man) * (A_man ** (self.sigma - 1))
@@ -550,7 +583,10 @@ C_ams_alt = np.array(
     share_agr * C_ams_agr + share_man * C_ams_man + share_ser * C_ams_ser
 )
 
-"C from aggregate labor: ams"
+"Alternative C series: recover C_t at each period by imposing the aggregate"
+"resource constraint sum_i ell_i = L_t and solving for the level of the CES"
+"index that clears it (consistent with the implicit-utility identity in"
+"Comin et al. 2021). Used as a cross-check against the C_index series."
 
 
 def C_exp_ams(C):
@@ -596,7 +632,11 @@ for i in range(int(ts_length)):
         econ.share_ser(C[i + 1], A_agr[i + 1], A_man[i + 1], A_ser[i + 1])
     )
 
-"Aggregate Productivity"
+"Aggregate Productivity: A = sum_i omega_i * A_i where omega_i is the"
+"model-implied employment share. Under linear-in-labor technology this is"
+"the labor-productivity analog of Hulten's theorem (Domar-weighted sectoral"
+"productivities). A_tot_ams uses model-implied shares; A_tot_ams_weighted"
+"below uses observed (HP-filtered) data shares as a reference benchmark."
 weighted_ams_A_agr = [a * b for a, b in zip(share_agr_ams, A_agr)]
 weighted_ams_A_man = [a * b for a, b in zip(share_man_ams, A_man)]
 weighted_ams_A_ser = [a * b for a, b in zip(share_ser_ams, A_ser)]
@@ -646,7 +686,8 @@ C_nps_alt = np.array(
     + share_nps * C_nps_nps
 )
 
-"C from aggregate labor: nps"
+"Alternative C series (six-sector): same logic as C_exp_ams above, using the"
+"six-sector aggregate resource constraint."
 
 
 def C_exp_nps(C):

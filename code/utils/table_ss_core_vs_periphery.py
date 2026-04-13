@@ -1,10 +1,20 @@
 """
-=======================================================================================
-Core vs. periphery shift-share decomposition (Tables A.9, A.10).
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        table_ss_core_vs_periphery.py
+Purpose:     Shift-share decomposition of aggregate labour productivity growth for
+             EU Core (DE, FR, BE, NL, DK) and EU Periphery (EL, IE, PT, ES, IT, GB)
+             alongside the U.S., for 1970-2019 and 1995-2019.
+Pipeline:    Step 17/19 — Generates Tables A.9 and A.10 (core vs. periphery
+             shift-share decomposition).
+Inputs:      ../data/euklems_2023.csv (sectoral VA, VA_Q, H by country, year, sector).
+Outputs:     ../output/tables/table_c2_core_vs_periphery_new.tex (Table A.9, 1970-2019),
+             ../output/tables/table_c3_core_vs_periphery_new.tex (Table A.10, 1995-2019).
+Dependencies: None — self-contained robustness companion to utils.table_1_ss_eu4.
 """
 
 import pandas as pd
@@ -19,7 +29,9 @@ data = pd.read_csv('../data/euklems_2023.csv', index_col=[0, 1])
 data.rename(index={'US': 'USA'}, inplace=True)
 
 
-# compute Total
+# Rebuild 'tot' as the sum of the six base sectors (agr, man, bss, fin, trd, nps).
+# 'ser' and 'prs' are alternate composite labels in EUKLEMS that overlap the
+# base sectors; dropping them keeps the aggregation a clean partition.
 data = data.reset_index()
 data = data[data.sector != "tot"]
 sector_filter = (data.sector != 'ser') & (data.sector != 'prs')
@@ -40,7 +52,10 @@ data['y_l'] = (data['VA_Q'] / data['H']) * 100
 'US data'
 data_us = data.loc[data.country == 'USA']
 
-'EU Core data'
+# EU Core = Germany, France, Benelux, Denmark. Definition follows the
+# Bayoumi-Eichengreen (1993) optimal-currency-area split repeated in the
+# euro-crisis literature, with Italy and the southern periphery moved out.
+# Aggregated on hours and real VA, then y_l rederived (same logic as table_1).
 tot_sector_filter = data.sector == "tot"
 EUCORE_countries = ['DE', "FR", "BE", "NL", "DK"]
 data_EUCORE = pd.DataFrame()
@@ -50,7 +65,9 @@ data_EUCORE['y_l'] = data_EUCORE['VA_Q'] / data_EUCORE['H'] * 100
 data_eu_core = data_EUCORE.copy()
 data_eu_core = data_eu_core.reset_index()
 
-'EU Periphery data'
+# EU Periphery = Greece, Ireland, Iberia, Italy, UK. Includes the GIIPS
+# economies most affected by the post-1999 productivity slowdown plus the UK
+# (kept for cross-reference with the EU4 main-text aggregate).
 tot_sector_filter = data.sector == "tot"
 EUPERI_countries = ['EL', "IE", "PT", "ES", "IT", "GB"]
 data_EUPERI = pd.DataFrame()
@@ -107,18 +124,21 @@ l_2019_eu_peri_nps = data_eu_peri_nps.loc[data_eu_peri_nps.year == 2019, ["secto
 
 def shift_share(lp_0, lp_T, l_0, l_T):
     """
-    all vectors with values for all sectors
+    Shift-share decomposition of aggregate labour productivity growth.
+    See utils.table_1_ss_eu4.shift_share for the full formula. Inputs are 1-D
+    arrays of length = number of sectors; returns dict with LP_growth,
+    within_effect and shift_effect as sector-level vectors.
     """
-    # Compute aggregate LP growth
+    # Aggregate LP in base and final years (sector-level products)
     LP_0 = (lp_0 * l_0)
     LP_T = (lp_T * l_T)
 
     LP_growth = (LP_T - LP_0)
 
-    # Within-sector productivity growth effect
+    # Within-sector productivity growth effect (shares held fixed at base year)
     within_growth = ((lp_T - lp_0) * l_0)
 
-    # Shift effect
+    # Reallocation (shift) effect, including the interaction term
     shift_growth = (((l_T - l_0) * lp_0) + ((l_T - l_0) * (lp_T - lp_0)))
 
     return {"LP_growth": LP_growth, "within_effect": within_growth, "shift_effect": shift_growth}
@@ -132,6 +152,9 @@ ss_us = shift_share(np.ones(6),
             l_1970_us_nps['LS'].values,
             l_2019_us_nps['LS'].values)
 
+# Counterfactual: replace EU Core manufacturing growth (sector index 1 in
+# the alphabetised order agr/man/bss/fin/trd/nps) with the U.S. figure to
+# isolate the contribution of slower European manufacturing productivity.
 cf_eu_core = 1 + (lp_2019_eu_core_nps['y_l'].values - lp_1970_eu_core_nps['y_l'].values)/lp_1970_eu_core_nps['y_l'].values
 cf_eu_core[1] = (1 + (lp_2019_us_nps['y_l'].values - lp_1970_us_nps['y_l'].values)/lp_1970_us_nps['y_l'].values)[1]
 #cf_eu_core[-1] = (1 + (lp_2019_us_nps['y_l'].values - lp_1970_us_nps['y_l'].values)/lp_1970_us_nps['y_l'].values)[-1]
@@ -147,6 +170,7 @@ ss_eu_core_cf = shift_share(np.ones(6),
             l_1970_eu_core_nps['LS'].values,
             l_2019_eu_core_nps['LS'].values)
 
+# Same counterfactual swap for the periphery aggregate.
 cf_eu_peri = 1 + (lp_2019_eu_peri_nps['y_l'].values - lp_1970_eu_peri_nps['y_l'].values)/lp_1970_eu_peri_nps['y_l'].values
 cf_eu_peri[1] = (1 + (lp_2019_us_nps['y_l'].values - lp_1970_us_nps['y_l'].values)/lp_1970_us_nps['y_l'].values)[1]
 #cf_eu_peri[-1] = (1 + (lp_2019_us_nps['y_l'].values - lp_1970_us_nps['y_l'].values)/lp_1970_us_nps['y_l'].values)[-1]
@@ -162,6 +186,7 @@ ss_eu_peri_cf = shift_share(np.ones(6),
             l_1970_eu_peri_nps['LS'].values,
             l_2019_eu_peri_nps['LS'].values)
 
+# 49-year annualisation horizon (1970-2019) for the Table A.9 panel.
 def annualized(x):
     return ((x) ** (1 / 49) - 1) * 100
 
@@ -318,6 +343,7 @@ ss_eu_peri = shift_share(A_1995_eu_peri,
             l_1995_eu_peri_nps['LS'].values,
             l_2019_eu_peri_nps['LS'].values)
 
+# 24-year annualisation horizon (1995-2019) for the Table A.10 panel.
 def annualized(x):
     return ((x) ** (1 / 24) - 1) * 100
 

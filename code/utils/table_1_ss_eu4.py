@@ -1,10 +1,21 @@
 """
-=======================================================================================
-Shift-share decomposition of LP growth, EU4 (Table 1).
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        table_1_ss_eu4.py
+Purpose:     Shift-share decomposition of aggregate labour productivity growth into
+             a within-sector growth effect and a cross-sector reallocation (shift)
+             effect, for the U.S. and EU4 (DE, FR, IT, GB), over 1970-2019 and
+             1995-2019.
+Pipeline:    Step 14/19 — Generates Table 1 (shift-share decomposition for EU4).
+Inputs:      ../data/euklems_2023.csv (sectoral VA, VA_Q, H by country, year, sector).
+Outputs:     ../output/tables/table1_ss.xlsx (Table 1 results).
+             Also exports module-level objects (shift_share, annualized,
+             lp_<year>_<region>_nps, l_<year>_<region>_nps) imported by utils.cfs.
+Dependencies: None — first script in the shift-share / counterfactuals chain.
 """
 
 import pandas as pd
@@ -19,7 +30,10 @@ data = pd.read_csv('../data/euklems_2023.csv', index_col=[0, 1])
 data.rename(index={'US': 'USA'}, inplace=True)
 
 
-# compute Total
+# Rebuild the 'tot' aggregate by summing the six base sectors (agr, man, bss,
+# fin, trd, nps). The EUKLEMS file ships precomputed 'ser' (services) and
+# 'prs' (personal services) labels that overlap with the base sectors; both
+# are dropped from the sum to keep the aggregation a clean partition.
 data = data.reset_index()
 data = data[data.sector != "tot"]
 sector_filter = (data.sector != 'ser') & (data.sector != 'prs')
@@ -34,13 +48,17 @@ final_data = pd.concat((final_data, data_total), axis=0)
 final_data = final_data.sort_values(['country', 'sector', 'year'])
 data = final_data.copy()
 
-'Labor Productivity'
+# Labor productivity in real value-added per hour, scaled by 100 so that the
+# series read in the same units as the EUKLEMS published indices.
 data['y_l'] = (data['VA_Q'] / data['H']) * 100
 
-'US data'
+# --- Country-level slices ---
 data_us = data.loc[data.country == 'USA']
 
-'EU4 data'
+# Build the EU4 aggregate by summing hours and real VA across DE+FR+IT+GB,
+# then re-deriving y_l on the totals. Aggregating the underlying inputs
+# (rather than weighting country-level y_l) preserves the correct
+# hours-weighted productivity definition.
 tot_sector_filter = data.sector == "tot"
 EU4_countries = ['DE', "FR", "IT", "GB"]
 data_EU4 = pd.DataFrame()
@@ -50,12 +68,15 @@ data_EU4['y_l'] = data_EU4['VA_Q'] / data_EU4['H'] * 100
 data_eu = data_EU4.copy()
 data_eu = data_eu.reset_index()
 
-# Compute emp. shares
-
-"US"
+# Sectoral employment share LS = H_sector / H_total, year-by-year.
+# `grouped['H'].get_group('tot').values` pulls the total-hours vector aligned
+# to each sector's row order so the divide is element-wise on years.
 grouped = data_us.groupby(['sector'])
 data_us['LS'] = data_us.groupby(['sector'])['H'].transform(lambda x: x / grouped['H'].get_group('tot').values)
 
+# `_nps` suffix = the six-sector partition with services split into nps + bss
+# + fin + trd (i.e. the subset that excludes the redundant 'tot', 'ser', 'prs'
+# composite labels). All shift-share inputs use this restricted set.
 data_us_nps = data_us[(data_us.sector != "tot") & (data_us.sector != "ser") & (data_us.sector != "prs")]
 
 lp_1970_us_nps = data_us_nps.loc[data_us_nps.year == 1970, ["sector", "y_l"]]
@@ -83,18 +104,27 @@ l_2019_eu_nps = data_eu_nps.loc[data_eu_nps.year == 2019, ["sector", "LS"]]
 
 def shift_share(lp_0, lp_T, l_0, l_T):
     """
-    all vectors with values for all sectors
+    Shift-share decomposition of aggregate labour productivity growth.
+
+    Inputs (all 1-D arrays of length = number of sectors):
+        lp_0, lp_T : sectoral labour productivity in base and final year
+        l_0, l_T   : sectoral employment shares in base and final year
+
+    Returns a dict with sector-level vectors:
+        LP_growth     = lp_T*l_T - lp_0*l_0   (total contribution)
+        within_effect = (lp_T - lp_0)*l_0     (productivity growth at fixed shares)
+        shift_effect  = (l_T - l_0)*lp_0 + (l_T - l_0)*(lp_T - lp_0)  (reallocation)
     """
-    # Compute aggregate LP growth
+    # Aggregate LP in base and final years (sector-level products)
     LP_0 = (lp_0 * l_0)
     LP_T = (lp_T * l_T)
 
     LP_growth = (LP_T - LP_0)
 
-    # Within-sector productivity growth effect
+    # Within-sector productivity growth effect (shares held fixed at base year)
     within_growth = ((lp_T - lp_0) * l_0)
 
-    # Shift effect
+    # Reallocation (shift) effect, including the interaction term
     shift_growth = (((l_T - l_0) * lp_0) + ((l_T - l_0) * (lp_T - lp_0)))
 
     return {"LP_growth": LP_growth, "within_effect": within_growth, "shift_effect": shift_growth}
@@ -108,6 +138,11 @@ ss_us = shift_share(np.ones(6),
             l_1970_us_nps['LS'].values,
             l_2019_us_nps['LS'].values)
 
+# Counterfactual EU growth vector: replace the manufacturing entry (index 1
+# in the alphabetised sector order agr/man/bss/fin/trd/nps) with the U.S.
+# manufacturing growth rate, leaving all other sectors at their EU values.
+# This isolates the shift-share contribution of EU manufacturing's slower
+# productivity growth (Table 1 footnote in the paper).
 cf_eu = 1 + (lp_2019_eu_nps['y_l'].values - lp_1970_eu_nps['y_l'].values)/lp_1970_eu_nps['y_l'].values
 cf_eu[1] = (1 + (lp_2019_us_nps['y_l'].values - lp_1970_us_nps['y_l'].values)/lp_1970_us_nps['y_l'].values)[1]
 #cf_eu[-1] = (1 + (lp_2019_us_nps['y_l'].values - lp_1970_us_nps['y_l'].values)/lp_1970_us_nps['y_l'].values)[-1]
@@ -123,6 +158,9 @@ ss_eu_cf = shift_share(np.ones(6),
             l_1970_eu_nps['LS'].values,
             l_2019_eu_nps['LS'].values)
 
+# Annualisation horizon: 49 = 1970 to 2019 inclusive (50 calendar years,
+# 49 growth intervals). Function is redefined later for the 1995-2019
+# block with horizon 24, so each subsection uses its own local closure.
 def annualized(x):
     return ((x) ** (1 / 49) - 1) * 100
 
@@ -165,6 +203,9 @@ for i in range(6):
     print("EU within effect", sectors[i], round(ss_eu["within_effect"][i] / ss_eu["LP_growth"].sum() * LP_eu, 2))
     print("EU shift effect", sectors[i], round(ss_eu["shift_effect"][i] / ss_eu["LP_growth"].sum() * LP_eu, 2))
 
+# Row 0 holds the aggregate ('tot') line; rows 1-7 hold sectors in the order
+# below. Row 3 ('ser') is the sum of bss + fin + trd + nps, populated as the
+# sub-sectors are filled in further down. Six columns: LP/Growth/Shift x US/EU.
 table_position_dic = {"agr": 1, "man": 2, "ser": 3, "bss": 4, "fin": 5, "trd": 6, "nps": 7}
 
 table_results = np.zeros((8, 6))
@@ -236,6 +277,7 @@ ss_eu = shift_share(A_1995_eu,
             l_1995_eu_nps['LS'].values,
             l_2019_eu_nps['LS'].values)
 
+# 24-year horizon for the 1995-2019 sub-period (Table 1, Panel B).
 def annualized(x):
     return ((x) ** (1 / 24) - 1) * 100
 

@@ -1,13 +1,33 @@
 """
-=======================================================================================
-Project: Structural Transformation and Productivity in Europe (with Duarte and Saenz)
-Filename: model_test_europe_open.py
-Description: This program uses the BDS model with calibrated parameters to  test our model
-    predictions for Europe, which constitutes a test of our theory.
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
+File:        model_test_europe_endogenous_xn.py
+Purpose:     Apply the US-calibrated endogenous-trade model to European
+             economies. Each country's sectoral exports are generated inside
+             the model via the trade elasticities xi_i calibrated on US data,
+             so net-export paths are model-implied (not data-fed). This is the
+             main specification used to evaluate the role of trade in the EU4
+             structural-change gap (Table 6, Figure 6).
+Pipeline:    Step 8/19 — Endogenous-trade model test on Europe.
+Inputs:      ../data/euklems_2023.csv (EUKLEMS 2023 VA_Q, H by country-sector)
+             ../data/io_panel.xlsx and ../data/exp_imp_aggregate_panel.xlsx
+             (OECD ICIO sectoral and aggregate trade flows, used to back out
+             country-specific export quantity indices)
+             ../data/raw/OECD_GDP_ph.xlsx (OECD GDP per hour, PPP USD)
+             Preference parameters (sigma, eps_*) from model_calibration_USA.py
+             and the endogenous-trade calibration (A_*, E, share_*, xi_*, year)
+             from model_calibration_USA_endogenous_open.py.
+Outputs:     The model_country class in its endogenous-trade form plus country
+             instances and EU aggregates EUR4_*, EUR13_*, EURCORE_*, EURPERI_*
+             consumed by trade_counterfactuals_endogenous.py and
+             generate_paper_outputs.py.
+Dependencies: model_calibration_USA.py (Step 1),
+              model_calibration_USA_open.py (Step 4, used for "year" alignment),
+              model_calibration_USA_endogenous_open.py (Step 7).
 """
 
 import matplotlib
@@ -23,7 +43,9 @@ from scipy.optimize import minimize, minimize_scalar
 from sklearn.linear_model import LinearRegression
 
 
-# The following string runs the calibration of the model on the US, and imports the parameter values that are used in this program. Also, it imports US GDP, needed in the European sectoral productivity measurement.
+# Import calibrated preference parameters from Step 1 and the US endogenous-trade
+# calibration from Step 7. US GDP and productivity aggregates are needed to
+# measure European sectoral productivity in comparable units.
 from model_calibration_USA import (
     sigma,
     eps_agr,
@@ -88,7 +110,14 @@ rc("font", family="serif")
 
 
 class model_country:
-    "Non-Homothetic CES Preferences and Technology of Production Linear in Labor"
+    """Country-level open-economy model (ENDOGENOUS trade). Sectoral exports
+    follow x_i,t = x_0,i * A_i,t^xi_i (equivalently x_i = x_0,i * p_i^{-xi_i}
+    since p_i = 1/A_i under linear-in-labor production). Preferences (sigma,
+    eps_*) are fixed at the US-calibrated values. The trade elasticities
+    xi_i are re-fit country by country (xi_fit_sector below) to hit each
+    economy's observed terminal-period real export level; net-export paths
+    are therefore model OUTPUTS that respond to productivity. This is the
+    specification used in Section 6, Table 6 and Figure 6 of the paper."""
 
     def __init__(
         self,
@@ -1035,7 +1064,14 @@ class model_country:
         self.nx_ser_q_index = self.x_ser_q_index - self.m_ser_q_index
 
         def xi_fit_sector(x_q_index, A):
-            # Objective: minimize distance at last period
+            """Country-specific recalibration of xi_i. Exactly-identified fit:
+            given the initial-period real export level x_0 and the sectoral
+            productivity path A_i, pick xi_i so that x_0 * A_i,T^xi_i equals
+            the terminal-period data export level. Matches Section 6 of the
+            paper (A is the US productivity series imported from Step 7 and
+            used uniformly across countries; xi_i therefore absorbs
+            country-specific terminal export levels)."""
+
             def objective(xi):
                 model_last = x_q_index[0] * A[-1] ** xi
                 data_last = x_q_index[-1]
@@ -1052,7 +1088,11 @@ class model_country:
         self.xi_nps = xi_fit_sector(self.x_nps_q_index, A_nps)
         self.xi_ser = xi_fit_sector(self.x_ser_q_index, A_ser)
 
-        "Non-homothetic CES index"
+        "Country-level non-homothetic CES index (endogenous-trade form)."
+        "Uses (l_i - nx_i)/(l_m - nx_m), i.e. relative domestic absorption"
+        "rather than relative employment, to neutralize the trade wedge in"
+        "the relative-labor identity. Initialized at the US-relative GDP"
+        "level to keep C and the productivity A_i paths in comparable units."
 
         def C_index(om_i, li, xn_i, lm, xn_m, pi_pm, sigma, epsilon_i):
             C_level = (

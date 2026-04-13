@@ -1,26 +1,27 @@
 """
-=======================================================================================
-Price Specification Comparison: 1/A_i vs Observed P_i = VA/VA_Q
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
 
-Author: Joao B. Duarte
-Last Modified: Feb 2026
-=======================================================================================
-Compares model employment shares under two price specifications:
-  (A) Model prices: p_i = 1/A_i  (theoretical prediction)
-  (B) Observed prices: P_i = VA_i / VA_Q_i  (data price deflators)
-
-Parameters calibrated to US data (from model_calibration_USA.py).
-Applied to US, DE, FR, GB, IT.
-
-Metrics:
-  1. Direct differences between specifications (levels)
-  2. First differences (changes year-to-year)
-  3. Cumulative changes from base year
-
-Outputs:
-  ../output/tables/table_3.tex  — Price specification comparison (Table 3)
-  ../output/tables/table_3.xlsx
-=======================================================================================
+File:        price_specification_comparison.py
+Purpose:     Robustness check on the price specification underlying sectoral
+             demand. Compares model-implied employment shares under:
+               (A) Model prices        p_i = 1/A_i      (theoretical)
+               (B) Observed prices     P_i = VA_i/VA_Q_i (empirical deflator)
+             and reports three metrics: level differences, year-to-year first
+             differences, and cumulative differences from the base year.
+             Answers the referee's request for a direct test of the model
+             pricing assumption.
+Pipeline:    Step 12/19 — Table 3 (price-specification robustness).
+Inputs:      ../data/euklems_2023.csv (EUKLEMS 2023 VA, VA_Q, H by country-sector)
+             ../data/raw/OECD_GDP_ph.xlsx (OECD GDP per hour for C_tilde recovery)
+             Applied to US, DE, FR, GB, IT.
+Outputs:     ../output/tables/table_3.tex and ../output/tables/table_3.xlsx.
+Dependencies: Standalone — re-calibrates preference parameters internally from
+              US data (does not import model_calibration_USA.py), so it can be
+              run independently of Steps 1-9.
 """
 
 import matplotlib
@@ -35,12 +36,21 @@ warnings.filterwarnings('ignore')
 # ============================================================
 # STEP 1: CALIBRATE PARAMETERS FROM US DATA
 # ============================================================
+# The preference parameters (sigma, eps_i, omega_i) are recalibrated internally
+# here — we do NOT import from model_calibration_USA.py — so this file is
+# self-contained and can be run even when the main calibration pipeline has not
+# executed. Trade-off: the numbers must match those in model_calibration_USA.py
+# to a few decimal places; if they ever diverge, the divergence indicates that
+# either the HP filter smoothing constant (100) or the EUKLEMS input file has
+# changed between steps.
 
 data_all = pd.read_csv('../data/euklems_2023.csv', index_col=[0, 1])
 data_all.rename(index={'US': 'USA'}, inplace=True)
+# Labor productivity in sectoral VA per hour (x100 for unit convenience).
 data_all['y_l'] = (data_all['VA_Q'] / data_all['H']) * 100
 
-# OECD GDP per hour (for C_tilde recovery)
+# OECD GDP per hour — aggregate anchor for C_tilde (utility index) level recovery.
+# Filtered to USD-denominated series so cross-country level comparisons are valid.
 GDP_ph = pd.read_excel('../data/raw/OECD_GDP_ph.xlsx', index_col=[0, 5], engine='openpyxl')
 GDP_ph = GDP_ph[GDP_ph['MEASURE'] == 'USD']
 
@@ -55,16 +65,20 @@ data_sec_us = {}
 for s in sectors_all:
     data_sec_us[s] = data_us[data_us['sector'] == s]
 
-# HP-filter all US series
+# HP-filter all US series with lambda=100 (standard value for annual data, e.g.
+# Ravn-Uhlig 2002). The cyclical component is discarded; only the trend component
+# (second return value) enters the structural-transformation decomposition.
 _, GDP_hp = sm.tsa.filters.hpfilter(GDP_ph_us['Value'], 100)
 g_GDP = np.array(GDP_hp / GDP_hp.shift(1) - 1).flatten()
 
 h_us = {}
 y_l_us = {}
 p_us = {}
-for s in sectors_all:
+for s in sectors_all:   # sector loop over {agr, man, trd, bss, fin, nps, ser, tot}
     _, h_us[s] = sm.tsa.filters.hpfilter(data_sec_us[s]['H'], 100)
     _, y_l_us[s] = sm.tsa.filters.hpfilter(data_sec_us[s]['y_l'], 100)
+    # Observed sectoral price deflator P_i = VA (nominal) / VA_Q (real quantity).
+    # This is Specification B — the "observed prices" arm of the robustness test.
     _, p_us[s] = sm.tsa.filters.hpfilter(data_sec_us[s]['VA'] / data_sec_us[s]['VA_Q'], 100)
 
 # Employment shares (6 sectors)
@@ -93,7 +107,13 @@ _, man_va_share = sm.tsa.filters.hpfilter(
 )
 man_va_share_last = np.array(man_va_share)[-1]
 
-# Calibration functions
+# Closed-form calibration helpers:
+#   sigma_ft(eps_s): invert the services vs. manufacturing relative-labor equation
+#       for the CES elasticity sigma given a chosen services preference elasticity.
+#   eps_i_ft(sigma, ...): invert the sector-i vs. manufacturing relative-labor
+#       equation for eps_i given sigma and the observed terminal-period ratios.
+# Both use last-period observations (rel_l_last, rel_p_last, E_pm_last) as the
+# identifying moments.
 def sigma_ft(eps_s):
     nom = (np.log(rel_l_last['ser']) - np.log(om['ser']/om['man'])
            - (eps_s - 1)*np.log(man_va_share_last/om['man']))
@@ -105,13 +125,17 @@ def eps_i_ft(sigma, rel_l, rel_om, rel_p):
     den = np.log(man_va_share_last/om['man']) + (1-sigma)*np.log(E_pm_last)
     return 1 + nom/den
 
-# Calibrate
+# Calibrate sigma using the paper's reference eps_ser = 1.2. The paper's
+# reported value is sigma ~ 0.79 (see MEMORY and sec_introduction.tex L63).
 sigma = sigma_ft(1.2)
 eps = {'man': 1.0}
 for s in ['agr', 'trd', 'bss', 'fin', 'nps', 'ser']:
     eps[s] = eps_i_ft(sigma, rel_l_last[s], om[s]/om['man'], rel_p_last[s])
 
-# C_tilde from US data (using services relative labor equation)
+# Closed-form C_tilde (utility index) recovery from the services-vs-manufacturing
+# relative labor equation — no fsolve needed, unlike the 6-sector HP specification
+# in counterfactuals.py. Level is base-year-normalised (C[0] = 1); only the
+# growth path g_C enters the downstream comparison.
 def C_index(om_i, li_lm, pi_pm, sigma_val, epsilon_i):
     C_level = ((om['man'] / om_i) * li_lm * (pi_pm ** (sigma_val - 1))) ** (1 / (epsilon_i - 1))
     g_C = np.array(C_level / C_level.shift(1) - 1)
@@ -137,11 +161,15 @@ print()
 # STEP 2: COMPUTE MODEL SHARES FOR EACH COUNTRY
 # ============================================================
 
+# Country set for the price-specification comparison. US is the calibration
+# anchor; DE/FR/GB/IT are the EU4 countries used throughout the paper. Note the
+# EUKLEMS country codes are 2-letter (DE, not DEU) here because the 2023 release
+# uses ISO alpha-2 in this file; we display 'US' not 'USA' in the output tables.
 countries = {'USA': 'US', 'DE': 'DE', 'FR': 'FR', 'GB': 'GB', 'IT': 'IT'}
 
 results = []
 
-for country_code, country_label in countries.items():
+for country_code, country_label in countries.items():   # country loop
     print(f"\n--- Processing {country_label} ---")
 
     if country_code == 'USA':
@@ -209,21 +237,27 @@ for country_code, country_label in countries.items():
 
     assert len(C_tilde_c) == n_years, f"C_tilde length {len(C_tilde_c)} != {n_years}"
 
-    for t in range(n_years):
+    for t in range(n_years):   # time loop: compute model-implied shares year by year
         C_t = C_tilde_c[t]
 
-        # Specification A: p_i = 1/A_i
+        # Specification A — THEORETICAL: substitute p_i = 1/A_i into the CES share
+        # formula. This is the specification used throughout the paper.
+        # Weight: om_i * C^eps_i * A_i^(sigma-1)  (A^(sigma-1) replaces p^(1-sigma)).
         num_A = {}
         denom_A = 0
-        for s in six_sectors:
+        for s in six_sectors:   # sector loop over 6 sectors
             val = om[s] * (C_t ** eps[s]) * (A_norm[s][t] ** (sigma - 1))
             num_A[s] = val
             denom_A += val
 
-        # Specification B: p_i = observed P_i
+        # Specification B — EMPIRICAL: use the observed sectoral deflator P_i
+        # directly. Weight: om_i * C^eps_i * P_i^(1-sigma). The test asks how
+        # much implied employment shares move when we swap the model price for
+        # its empirical analogue — small differences support the model's pricing
+        # assumption (see Table 3).
         num_P = {}
         denom_P = 0
-        for s in six_sectors:
+        for s in six_sectors:   # sector loop
             val = om[s] * (C_t ** eps[s]) * (P_norm[s][t] ** (1 - sigma))
             num_P[s] = val
             denom_P += val
@@ -253,13 +287,21 @@ print(f"Sectors: {df['sector'].unique()}")
 
 
 # ============================================================
-# ANALYSIS
+# ANALYSIS — three metrics on the (A) vs (B) specification gap
 # ============================================================
+#
+# Metric 1 (Panel A): direct level difference share_1/A - share_P. Mean |gap|,
+#   max |gap|, std of signed gap — answers "how close are the two specs?".
+# Metric 2 (Panel B): year-to-year first-differences — answers "do the specs
+#   track the same short-run movements?" via correlation and MAE against data.
+# Metric 3 (Panel C): cumulative differences from base year — answers "do the
+#   specs track the same long-run trajectory?" same correlation/MAE logic.
 
 df['diff_specs'] = df['share_1overA'] - df['share_P']
 df['abs_diff_specs'] = np.abs(df['diff_specs'])
 
-# First differences
+# First differences: year-on-year Δshare (country×sector); one value per year
+# except the first (which is NaN after diff() and is skipped).
 fd_rows = []
 for c in ['US', 'DE', 'FR', 'GB', 'IT']:
     for s in six_sectors:

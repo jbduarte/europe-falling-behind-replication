@@ -1,3 +1,39 @@
+"""
+Replication code for:
+    Buiatti, C., Duarte, J. B., & Sáenz, L. F. (2026).
+    "Europe Falling Behind: Structural Transformation and Labor Productivity
+    Growth Differences Between Europe and the U.S."
+    Journal of International Economics.
+
+File:    select_data.py
+Purpose: Filter raw EUKLEMS releases (2009/2017/2021/2023) to the EU15+US
+         sample and collapse the NACE Rev.2 industries into the paper's six
+         structural sectors (agr, man, trd, bss, fin, nps; plus tot, ser,
+         prs composites), writing the cleaned country-sector-year panel to
+         data/euklems_<release>.csv.
+Pipeline:    Data-build chain (raw -> data/euklems_<release>.csv). The main
+             pipeline reads data/euklems_2023.csv directly, so this is the
+             key transformation step from raw download to analysis panel.
+
+Build stages (2023 branch, the one the paper uses):
+  1. Load data/raw_data/EUKLEMS_2023/data_raw.csv, remap UK->GB and EL->GR.
+  2. Apply the six-sector mapping (sectors_dict below) and filter to EU15+US.
+  3. Aggregate industries into the six sectors by summing VA_CP, H_EMP, VA_Q.
+  4. If sample_period[0] < 1995, back-extrapolate VA/H/VA_Q to 1970 using
+     (a) EUKLEMS 2009 release growth rates for 1970-1994 for all countries,
+     (b) World KLEMS 2013 U.S. release for the pre-1977 U.S. extension.
+  5. Append 'ser' (all services) and 'prs' (progressive services:
+     services excluding nps) composite rows for convenience.
+
+Sector taxonomy (paper's six sectors):
+  agr = agriculture (NACE A)
+  man = manufacturing + mining + construction + utilities (NACE B/C/D-E/F)
+  trd = trade (NACE G)
+  bss = business services (NACE J + M-N)
+  fin = finance (NACE K)
+  nps = non-progressive services (NACE H/I/L/O/P/Q/R-S/T)
+"""
+
 import pandas as pd
 import country_converter as coco
 import numpy as np
@@ -5,22 +41,29 @@ import numpy as np
 def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR", "IE", "IT", "LU", "NL", "PT", "ES", "SE", "GB"),
                 sample_period=(1997, 2018),
                 release="2021"):
-    """
-    Selects raw data from EUKLEMS and saves the sectoral hours worked, price deflator and value added (current prices) to the Final data folder
+    """Build the country-sector-year analysis panel for a given EUKLEMS
+    release.
 
-    Inputs
-    ------
-    countries: list
-    sample_period: list with two elements: start and end dates
-    release: string
+    Parameters
+    ----------
+    countries : iterable of str
+        ISO2 country codes to retain (EU15 members + US + EU15 aggregate).
+    sample_period : tuple (start, end)
+        Year range. If start < the release's first year, the function
+        back-extrapolates via the 2009 release + World KLEMS U.S.
+    release : {"2009", "2017", "2021", "2023"}
+        Which EUKLEMS release to process.
     """
 
     if release == "2023":
         print('Building', release, 'data ...')
-        file_path = "../Data/Raw Data/EUKLEMS_" + release + '/data_raw.csv'
+        file_path = "../data/raw_data/EUKLEMS_" + release + '/data_raw.csv'
         data_temp = pd.read_csv(file_path)
 
-        # Dictionaries
+        # Six-sector NACE Rev.2 mapping. The commented-out richer taxonomy
+        # (rst/trs/res/gov/edu/hlt/per) is the granular variant we used for
+        # internal checks; the paper collapses all of H/I/L/O-T into the
+        # single 'nps' (non-progressive services) aggregate.
         # sectors_dict = {"A": 'agr', "B": "man", "C": "man", "D-E": "man", "F": "man", "G": "trd", "I": "rst", "H": "trs",
         #                 "J": "bss", "K": "fin", "L": "res", "M-N": "bss", "O": "gov",
         #                 "P": "edu", "Q": "hlt", "R-S": "per", "T": "per"}
@@ -28,6 +71,8 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
                         "J": "bss", "K": "fin", "L": "nps", "M-N": "bss", "O": "nps",
                         "P": "nps", "Q": "nps", "R-S": "nps", "T": "nps", "TOT": "tot"}
 
+        # EUKLEMS uses Eurostat country codes (UK, EL) while downstream code
+        # expects ISO2 (GB, GR).
         data_temp.loc[data_temp.geo_code == 'UK', 'geo_code'] = 'GB'
         data_temp.loc[data_temp.geo_code == 'EL', 'geo_code'] = 'GR'
 
@@ -49,11 +94,11 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         data_temp.columns = ["country", "year", "sector", "VA", "H", "VA_Q"]
 
         if sample_period[0] >= 1995:
-            data_temp.to_csv('../Data/Final Data/euklems_' + release + '.csv', index=False)
+            data_temp.to_csv('../data/euklems_' + release + '.csv', index=False)
 
         else:
             # use 2009 release to extrapolate backwards to 1977 using growth rates
-            data_2009 = pd.read_csv("../Data/Final Data/euklems_2009.csv")
+            data_2009 = pd.read_csv("../data/euklems_2009.csv")
             data_2009 = data_2009[data_2009.sector != "com"]
             data_2009_growth = data_2009.groupby(["country", "sector"], as_index=False).transform(lambda x: np.log(x).diff())
             data_2009_growth = data_2009_growth.loc[:, "VA":]
@@ -99,7 +144,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
             final_data.columns = ['country', 'year', 'sector', 'VA', 'H', 'VA_Q']
 
             ## Get first 7 years of US data with World KLEMS data
-            usa_world_klems_data = pd.read_csv("../Data/Raw Data/World_KLEMS_2013/data_raw_usa.csv")
+            usa_world_klems_data = pd.read_csv("../data/raw_data/World_KLEMS_2013/data_raw_usa.csv")
             usa_world_klems_data = usa_world_klems_data.melt(id_vars=['Variable', 'desc', 'code'])
             usa_world_klems_data['variable'] = usa_world_klems_data['variable'].apply(lambda x: x[1:])
             usa_world_klems_data['year'] = usa_world_klems_data['variable'].astype(int)
@@ -217,12 +262,12 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
             final_data = pd.concat((final_data, data_services), axis=0)
             final_data = final_data.sort_values(['country', 'sector', 'year'])
 
-            final_data.to_csv('../Data/Final Data/euklems_' + release + '.csv', index=False)
+            final_data.to_csv('../data/euklems_' + release + '.csv', index=False)
         print('\n ...Done!')
 
     elif release == "2021":
         print('Building', release, 'data ...')
-        file_path = "../Data/Raw Data/EUKLEMS_" + release + '/data_raw.csv'
+        file_path = "../data/raw_data/EUKLEMS_" + release + '/data_raw.csv'
         data_temp = pd.read_csv(file_path)
 
         # Dictionaries
@@ -254,11 +299,11 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         data_temp.columns = ["country", "year", "sector", "VA", "H", "P"]
 
         if sample_period[0] >= 1997:
-            data_temp.to_csv('../Data/Final Data/euklems_' + release + '.csv', index=False)
+            data_temp.to_csv('../data/euklems_' + release + '.csv', index=False)
 
         if sample_period[0] < 1997:
             # use 2009 release to extrolate backwards to 1977 using growth rates
-            data_2009 = pd.read_csv("../Data/Final Data/euklems_2009.csv")
+            data_2009 = pd.read_csv("../data/euklems_2009.csv")
             data_2009 = data_2009[data_2009.sector != "com"]
             data_2009_growth = data_2009.groupby(["country", "sector"], as_index=False).transform(lambda x: np.log(x).diff())
             data_2009_growth = data_2009_growth.loc[:, "VA":]
@@ -304,7 +349,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
             final_data.columns = ['country', 'year', 'sector', 'VA', 'H', 'P']
 
             ## Get first 7 years of US data with World KLEMS data
-            usa_world_klems_data = pd.read_csv("../Data/Raw Data/World_KLEMS_2013/data_raw_usa.csv")
+            usa_world_klems_data = pd.read_csv("../data/raw_data/World_KLEMS_2013/data_raw_usa.csv")
             usa_world_klems_data = usa_world_klems_data.melt(id_vars=['Variable', 'desc', 'code'])
             usa_world_klems_data['variable'] = usa_world_klems_data['variable'].apply(lambda x: x[1:])
             usa_world_klems_data['year'] = usa_world_klems_data['variable'].astype(int)
@@ -410,12 +455,12 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         final_data = pd.concat((final_data, data_services), axis=0)
         final_data = final_data.sort_values(['country', 'sector', 'year'])
 
-        final_data.to_csv('../Data/Final Data/euklems_' + release + '.csv', index=False)
+        final_data.to_csv('../data/euklems_' + release + '.csv', index=False)
         print('\n ...Done!')
 
 
     elif release == "2017":
-        file_path = "../Data/Raw Data/EUKLEMS_" + release + '/data_raw.csv'
+        file_path = "../data/raw_data/EUKLEMS_" + release + '/data_raw.csv'
         data_temp = pd.read_csv(file_path)
 
         # First need to put the data into tidy panel format
@@ -447,11 +492,11 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         data_temp = data_temp.groupby(["country", "year", "sector"]).aggregate({'VA': 'sum', 'H_EMP': 'sum', 'VA_P_ws': 'sum'})
         data_temp = data_temp.reset_index()
         data_temp.columns = ["country", "year", "sector", "VA", "H", "P"]
-        data_temp.to_csv('../Data/Final Data/euklems_' + release + '.csv', index=False)
+        data_temp.to_csv('../data/euklems_' + release + '.csv', index=False)
 
     elif release == "2009":
         print('Building', release, 'data ...')
-        file_path = "../Data/Raw Data/EUKLEMS_" + release + '/data_raw.csv'
+        file_path = "../data/raw_data/EUKLEMS_" + release + '/data_raw.csv'
         data_temp = pd.read_csv(file_path)
 
         # First need to put the data into tidy panel format
@@ -495,7 +540,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         data_temp = data_temp.groupby(["country", "year", "sector"]).aggregate({'VA': 'sum', 'H_EMP': 'sum', 'VA_Q': 'sum'})
         data_temp = data_temp.reset_index()
         data_temp.columns = ["country", "year", "sector", "VA", "H", "VA_Q"]
-        data_temp.to_csv('../Data/Final Data/euklems_' + release + '.csv', index=False)
+        data_temp.to_csv('../data/euklems_' + release + '.csv', index=False)
         print('\n ...Done!')
 
     else:
