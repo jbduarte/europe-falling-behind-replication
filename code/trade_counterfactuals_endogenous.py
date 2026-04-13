@@ -36,11 +36,10 @@ matplotlib.use("Agg")
 import copy
 import os
 import pandas as pd
-import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
-from scipy.optimize import minimize_scalar, root, fsolve
+from scipy.optimize import fsolve
 
 rc("text", usetex=True)
 rc("font", family="serif")
@@ -221,53 +220,7 @@ if not USE_CACHE:
     from model_calibration_USA_endogenous_open import (
         GDP_ph,
         E,
-        A_tot,
-        share_agr,
-        share_man,
-        share_trd,
-        share_bss,
-        share_fin,
-        share_nps,
-        share_ser,
-        share_agr_ams,
-        share_man_ams,
-        share_ser_ams,
-        A_tot_ams,
-        share_agr_nps,
-        share_man_nps,
-        share_trd_nps,
-        share_bss_nps,
-        share_fin_nps,
-        share_nps_nps,
         A_tot_nps,
-        xi_agr,
-        xi_man,
-        xi_trd,
-        xi_bss,
-        xi_fin,
-        xi_nps as xi_nps_usa,
-        xi_ser,
-        x_agr_q_index as x_agr_q_index_usa,
-        x_man_q_index as x_man_q_index_usa,
-        x_trd_q_index as x_trd_q_index_usa,
-        x_bss_q_index as x_bss_q_index_usa,
-        x_fin_q_index as x_fin_q_index_usa,
-        x_nps_q_index as x_nps_q_index_usa,
-        x_ser_q_index as x_ser_q_index_usa,
-        x_agr_index as x_agr_index_usa,
-        x_man_index as x_man_index_usa,
-        x_trd_index as x_trd_index_usa,
-        x_bss_index as x_bss_index_usa,
-        x_fin_index as x_fin_index_usa,
-        x_nps_index as x_nps_index_usa,
-        x_ser_index as x_ser_index_usa,
-        M_agr_E as M_agr_E_usa,
-        M_man_E as M_man_E_usa,
-        M_trd_E as M_trd_E_usa,
-        M_bss_E as M_bss_E_usa,
-        M_fin_E as M_fin_E_usa,
-        M_nps_E as M_nps_E_usa,
-        M_ser_E as M_ser_E_usa,
     )
     # Rename US Aggregates
     GDP_ph_USA, E_USA = GDP_ph, E
@@ -279,54 +232,14 @@ if not USE_CACHE:
         EURCORE_h_tot,
         EURPERI_h_tot,
         EUR13_h_tot,
-        EUR4_A_tot,
-        EURCORE_A_tot,
-        EURPERI_A_tot,
-        EUR13_A_tot,
         EUR4_rel_A_tot,
-        EUR13_rel_A_tot,
-        EUR4_E,
-        EUR13_E,
-        EUR4_rel_E,
-        EUR13_rel_E,
         EUR4_share_agr,
-        EUR13_share_agr,
         EUR4_share_man,
-        EUR13_share_man,
-        EUR4_share_ser,
-        EUR13_share_ser,
-        EUR4_share_trd,
-        EUR13_share_trd,
-        EUR4_share_bss,
-        EUR13_share_bss,
-        EUR4_share_fin,
-        EUR13_share_fin,
         EUR4_share_nps,
-        EUR13_share_nps,
-        EUR4_share_agr_ams_m,
-        EUR13_share_agr_ams_m,
         EUR4_share_agr_nps_m,
-        EUR13_share_agr_nps_m,
-        EUR4_share_man_ams_m,
-        EUR13_share_man_ams_m,
         EUR4_share_man_nps_m,
-        EUR13_share_man_nps_m,
-        EUR4_share_ser_ams_m,
-        EUR13_share_ser_ams_m,
-        EUR4_share_trd_nps_m,
-        EUR13_share_trd_nps_m,
-        EUR4_share_bss_nps_m,
-        EUR13_share_bss_nps_m,
-        EUR4_share_fin_nps_m,
-        EUR13_share_fin_nps_m,
         EUR4_share_nps_nps_m,
-        EUR13_share_nps_nps_m,
-        EUR4_A_tot_ams,
-        EUR13_A_tot_ams,
         EUR4_A_tot_nps,
-        EURCORE_A_tot_nps,
-        EURPERI_A_tot_nps,
-        EUR13_A_tot_nps,
     )
 
 
@@ -5395,22 +5308,10 @@ cf_base = np.array(
 # exogenous namespace polluting the endogenous `share_*` / `A_tot_*` variables
 # used above. `_exo` suffix is applied on import to prevent accidental shadowing.
 from model_test_europe_open import (
-    EUR4_share_agr as EUR4_share_agr_exo,
-    EUR4_share_man as EUR4_share_man_exo,
-    EUR4_share_ser as EUR4_share_ser_exo,
-    EUR4_share_trd as EUR4_share_trd_exo,
-    EUR4_share_bss as EUR4_share_bss_exo,
-    EUR4_share_fin as EUR4_share_fin_exo,
-    EUR4_share_nps as EUR4_share_nps_exo,
     EUR4_share_agr_nps_m as EUR4_share_agr_nps_m_exo,
     EUR4_share_man_nps_m as EUR4_share_man_nps_m_exo,
-    EUR4_share_trd_nps_m as EUR4_share_trd_nps_m_exo,
-    EUR4_share_bss_nps_m as EUR4_share_bss_nps_m_exo,
-    EUR4_share_fin_nps_m as EUR4_share_fin_nps_m_exo,
     EUR4_share_nps_nps_m as EUR4_share_nps_nps_m_exo,
     EUR4_A_tot_nps as EUR4_A_tot_nps_exo,
-    EUR4_A_tot as EUR4_A_tot_exo,
-    EUR4_rel_A_tot as EUR4_rel_A_tot_exo,
 )
 
 # ------- Comparison Table: Counterfactual results (exogenous vs endogenous) -------

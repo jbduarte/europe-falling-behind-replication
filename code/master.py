@@ -118,7 +118,7 @@ for i, (script, desc) in enumerate(scripts):
             print(f"\n  WARNING: {script} failed (exit code {result.returncode}). Continuing.")
         else:
             print(f"\n  ERROR: {script} failed (exit code {result.returncode})")
-            print(f"  Aborting replication.")
+            print("  Aborting replication.")
             sys.exit(1)
     print(f"  Completed in {elapsed:.1f}s")
 
@@ -127,5 +127,5 @@ minutes = int(total_elapsed // 60)
 seconds = int(total_elapsed % 60)
 print(f"\n{'=' * 70}")
 print(f"  All steps completed successfully in {minutes}m {seconds}s")
-print(f"  Outputs saved to: ../output/")
+print("  Outputs saved to: ../output/")
 print(f"{'=' * 70}")

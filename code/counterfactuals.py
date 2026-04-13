@@ -30,23 +30,19 @@ matplotlib.use("Agg")
 import pandas as pd
 import pickle
 import numpy as np 
-import matplotlib.pyplot as plt
 from matplotlib import rc
-from scipy.optimize import minimize_scalar, root, fsolve
+from scipy.optimize import fsolve
 rc('text', usetex=True)
 rc('font', family='serif')
 
 # Import US preference parameters and US calibrated productivity/employment
 # objects (needed as the benchmark against which European counterfactuals are run).
-from model_calibration_USA import sigma, eps_agr, eps_ser, eps_trd, eps_bss, eps_fin, eps_nps, GDP, E, A_agr, A_man, A_trd, A_bss, A_fin, A_nps, A_ser, A_tot, A_tot_ams, A_tot_nps, A_tot_ams_weighted, A_tot_nps_weighted
+from model_calibration_USA import sigma, eps_agr, eps_ser, eps_trd, eps_bss, eps_fin, eps_nps, GDP, E, A_tot_nps
 
 # Import European model_country instances and EU4/EU15/core/periphery aggregates
 # produced in Step 2 — they carry recovered sectoral productivities and observed
 # employment shares that the counterfactuals perturb.
-from model_test_europe import model_country, EUR4_h_tot, EURCORE_h_tot, EURPERI_h_tot,  EUR15_h_tot, EUR4_A_tot, EURCORE_A_tot, EURPERI_A_tot, EUR15_A_tot, EUR4_rel_A_tot, EUR15_rel_A_tot, EUR4_E, EUR15_E, EUR4_rel_E, EUR15_rel_E, \
-	EUR4_share_agr, EUR15_share_agr, EUR4_share_man, EUR15_share_man, EUR4_share_ser, EUR15_share_ser, EUR4_share_trd, EUR15_share_trd, EUR4_share_bss, EUR15_share_bss, EUR4_share_fin, EUR15_share_fin, EUR4_share_nps, EUR15_share_nps, \
-	EUR4_share_agr_ams_m, EUR15_share_agr_ams_m, EUR4_share_agr_nps_m, EUR15_share_agr_nps_m, EUR4_share_man_ams_m, EUR15_share_man_ams_m, EUR4_share_man_nps_m, EUR15_share_man_nps_m, EUR4_share_ser_ams_m, EUR15_share_ser_ams_m, EUR4_share_trd_nps_m, EUR15_share_trd_nps_m, EUR4_share_bss_nps_m, EUR15_share_bss_nps_m, EUR4_share_fin_nps_m, EUR15_share_fin_nps_m, EUR4_share_nps_nps_m, EUR15_share_nps_nps_m, \
-	EUR4_A_tot_ams, EUR15_A_tot_ams, EUR4_A_tot_nps, EURCORE_A_tot_nps, EURPERI_A_tot_nps, EUR15_A_tot_nps
+from model_test_europe import model_country, EUR4_h_tot, EURCORE_h_tot, EURPERI_h_tot,  EUR15_h_tot, EUR4_A_tot, EUR4_A_tot_nps
 
 data_export = {}  # Object to export results
 data_export["EUR4_h_tot"] = EUR4_h_tot

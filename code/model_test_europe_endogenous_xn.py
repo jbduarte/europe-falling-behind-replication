@@ -36,11 +36,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import statsmodels.api as sm
-from scipy.optimize import fsolve, root
+from scipy.optimize import fsolve
 import pandas as pd
-from model_calibration_USA_open import year as USA_year
-from scipy.optimize import minimize, minimize_scalar
-from sklearn.linear_model import LinearRegression
+from scipy.optimize import minimize_scalar
 
 
 # Import calibrated preference parameters from Step 1 and the US endogenous-trade
@@ -58,7 +56,6 @@ from model_calibration_USA import (
 from model_calibration_USA_endogenous_open import (
     E,
     A_tot,
-    A_tot_ams,
     A_tot_nps,
     A_agr,
     A_man,
@@ -73,28 +70,17 @@ from model_calibration_USA_endogenous_open import (
     share_trd,
     share_bss,
     share_fin,
-    share_nps,
-    share_ser,
-    share_agr_ams,
-    share_man_ams,
-    share_ser_ams,
-    share_agr_ams_closed,
-    share_man_ams_closed,
-    share_ser_ams_closed,
-    A_tot_ams_closed,
     share_agr_nps,
     share_man_nps,
     share_trd_nps,
     share_bss_nps,
     share_fin_nps,
-    share_nps_nps,
     A_tot_nps,
     share_agr_nps_closed,
     share_man_nps_closed,
     share_trd_nps_closed,
     share_bss_nps_closed,
     share_fin_nps_closed,
-    share_nps_nps_closed,
     A_tot_nps_closed,
 )
 

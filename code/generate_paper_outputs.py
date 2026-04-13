@@ -28,7 +28,6 @@ Usage:
     python generate_paper_outputs.py
 """
 
-import sys
 import os
 import numpy as np
 import pandas as pd
@@ -51,19 +50,9 @@ print("Importing endogenous model modules (this triggers calibration)...")
 
 # U.S. structural parameters: price elasticity sigma plus the sectoral income
 # elasticities eps_*. Used by downstream scripts but kept here for cross-checks.
-from model_calibration_USA import (
-    sigma,
-    eps_agr,
-    eps_trd,
-    eps_fin,
-    eps_bss,
-    eps_nps,
-    eps_ser,
-)
 
 # US endogenous open-economy calibration
 from model_calibration_USA_endogenous_open import (
-    E,
     A_tot,
     A_tot_nps,
     A_agr,
@@ -72,50 +61,36 @@ from model_calibration_USA_endogenous_open import (
     A_bss,
     A_fin,
     A_nps,
-    A_ser,
     share_agr,
     share_man,
     share_trd,
     share_bss,
     share_fin,
-    share_nps,
     share_agr_nps,
     share_man_nps,
     share_trd_nps,
     share_bss_nps,
     share_fin_nps,
-    share_nps_nps,
     share_agr_nps_closed,
     share_man_nps_closed,
     share_trd_nps_closed,
     share_bss_nps_closed,
     share_fin_nps_closed,
     share_nps_nps_closed,
-    GDP_ph,
 )
 
 # European endogenous calibration
 from model_test_europe_endogenous_xn import (
-    model_country,
     EUR4_h_tot,
-    EURCORE_h_tot,
-    EURPERI_h_tot,
     EUR13_h_tot,
-    EUR4_A_tot,
-    EURCORE_A_tot,
-    EURPERI_A_tot,
-    EUR13_A_tot,
     EUR4_rel_A_tot,
     EUR13_rel_A_tot,
-    EUR4_E,
-    EUR13_E,
     EUR4_share_agr,
     EUR4_share_man,
     EUR4_share_trd,
     EUR4_share_bss,
     EUR4_share_fin,
     EUR4_share_nps,
-    EUR4_share_ser,
     EUR4_share_agr_nps_m,
     EUR4_share_man_nps_m,
     EUR4_share_trd_nps_m,
@@ -127,7 +102,6 @@ from model_test_europe_endogenous_xn import (
     EUR4_share_trd_nps_m_closed,
     EUR4_share_bss_nps_m_closed,
     EUR4_share_fin_nps_m_closed,
-    EUR4_share_nps_nps_m_closed,
     EUR13_share_agr,
     EUR13_share_man,
     EUR13_share_trd,
@@ -143,14 +117,6 @@ from model_test_europe_endogenous_xn import (
 )
 
 # Import EUR13 closed shares and individual country objects
-from model_test_europe_endogenous_xn import (
-    EUR13_share_agr_nps_m_closed,
-    EUR13_share_man_nps_m_closed,
-    EUR13_share_trd_nps_m_closed,
-    EUR13_share_bss_nps_m_closed,
-    EUR13_share_fin_nps_m_closed,
-    EUR13_share_nps_nps_m_closed,
-)
 
 # Country objects for computing aggregate productivity
 from model_test_europe_endogenous_xn import (
@@ -728,7 +694,7 @@ if os.path.exists(cf2_model_file) and os.path.exists(cf2_ss_file):
         cf2_man_ss = cf2_trd_ss = cf2_bss_ss = np.nan
 else:
     print(
-        f"  WARNING: CF2 Excel files not found. Run trade_counterfactuals_endogenous.py first."
+        "  WARNING: CF2 Excel files not found. Run trade_counterfactuals_endogenous.py first."
     )
     cf2_man_model = cf2_trd_model = cf2_bss_model = np.nan
     cf2_man_ss = cf2_trd_ss = cf2_bss_ss = np.nan

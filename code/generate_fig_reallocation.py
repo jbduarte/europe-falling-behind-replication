@@ -29,7 +29,6 @@ from matplotlib import rc
 rc("text", usetex=True)
 rc("font", family="serif")
 import numpy as np
-import pandas as pd
 
 from model_test_europe import (model_country, EUR4_h_tot,
     EUR4_share_agr_nps_m, EUR4_share_man_nps_m, EUR4_share_trd_nps_m,

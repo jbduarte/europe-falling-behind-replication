@@ -19,7 +19,6 @@ Dependencies: None — first script in the shift-share / counterfactuals chain.
 """
 
 import pandas as pd
-import statsmodels.api as sm
 from matplotlib import rc
 import numpy as np
 

@@ -18,7 +18,6 @@ Dependencies: None — self-contained robustness companion to utils.table_1_ss_e
 """
 
 import pandas as pd
-import statsmodels.api as sm
 from matplotlib import rc
 import numpy as np
 

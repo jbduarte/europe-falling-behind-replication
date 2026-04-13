@@ -27,7 +27,6 @@ import matplotlib
 matplotlib.use("Agg")
 import pandas as pd 
 import numpy as np 
-from scipy.optimize import minimize_scalar, root, fsolve
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 from matplotlib import rc

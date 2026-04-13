@@ -28,11 +28,9 @@ import matplotlib
 matplotlib.use("Agg")
 import pandas as pd
 import numpy as np
-from scipy.optimize import minimize_scalar, root, fsolve
+from scipy.optimize import minimize_scalar
 import statsmodels.api as sm
-import matplotlib.pyplot as plt
 from matplotlib import rc
-from collections import OrderedDict
 import numpy as np
 
 rc("text", usetex=True)

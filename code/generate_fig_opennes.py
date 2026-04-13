@@ -27,7 +27,6 @@ import matplotlib.pyplot as plt
 from matplotlib import rc
 rc("text", usetex=True)
 rc("font", family="serif")
-import numpy as np
 
 from model_calibration_USA_open import exp_imp_agr_Y, exp_imp_man_Y, exp_imp_trd_Y, exp_imp_bss_Y, exp_imp_fin_Y, exp_imp_nps_Y
 from model_test_europe_open import DEU, FRA, GBR, ITA, EUR4_h_tot

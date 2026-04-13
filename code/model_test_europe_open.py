@@ -29,7 +29,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import statsmodels.api as sm
-from scipy.optimize import fsolve, root
+from scipy.optimize import fsolve
 import pandas as pd
 rc('text', usetex=True)
 rc('font', family='serif')
@@ -39,11 +39,8 @@ rc('font', family='serif')
 # sectoral productivity in comparable units.
 from model_calibration_USA import sigma, eps_agr, eps_trd, eps_fin, eps_bss, eps_nps, eps_ser
 from model_calibration_USA_open import GDP_ph, E, A_tot, \
-    share_agr, share_man, share_trd, share_bss, share_fin, share_nps, share_ser, \
-    share_agr_ams, share_man_ams, share_ser_ams, A_tot_ams, \
-    share_agr_ams_closed, share_man_ams_closed, share_ser_ams_closed, A_tot_ams_closed, \
-    share_agr_nps, share_man_nps, share_trd_nps, share_bss_nps, share_fin_nps, share_nps_nps, A_tot_nps, \
-    share_agr_nps_closed, share_man_nps_closed, share_trd_nps_closed, share_bss_nps_closed, share_fin_nps_closed, share_nps_nps_closed, A_tot_nps_closed
+    share_agr, share_man, share_trd, share_bss, share_fin, share_agr_nps, share_man_nps, share_trd_nps, share_bss_nps, share_fin_nps, A_tot_nps, \
+    share_agr_nps_closed, share_man_nps_closed, share_trd_nps_closed, share_bss_nps_closed, share_fin_nps_closed, A_tot_nps_closed
 
 #    nx_agr_Y, nx_man_Y, nx_trd_Y, nx_bss_Y, nx_fin_Y, nx_nps_Y, nx_ser_Y, nx_tot_Y, \
 #    expo_agr, expo_man, expo_trd, expo_bss, expo_fin, expo_nps, expo_ser, expo_tot, \

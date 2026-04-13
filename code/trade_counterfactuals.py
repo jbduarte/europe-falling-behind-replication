@@ -25,23 +25,16 @@ Dependencies: model_calibration_USA.py (Step 1), model_calibration_USA_open.py
 import matplotlib
 matplotlib.use("Agg")
 import pandas as pd
-import pickle
 import numpy as np 
-import matplotlib.pyplot as plt
 from matplotlib import rc
-from scipy.optimize import minimize_scalar, root, fsolve
+from scipy.optimize import fsolve
 rc('text', usetex=True)
 rc('font', family='serif')
 
 # Import US preference parameters (Step 1) and US open-economy aggregates
 # (Step 4) used as the benchmark for European counterfactuals.
 from model_calibration_USA import sigma, eps_agr, eps_trd, eps_fin, eps_bss, eps_nps, eps_ser
-from model_calibration_USA_open import GDP_ph, E, A_tot, \
-    share_agr, share_man, share_trd, share_bss, share_fin, share_nps, share_ser, \
-    share_agr_ams, share_man_ams, share_ser_ams, A_tot_ams, \
-    share_agr_ams_closed, share_man_ams_closed, share_ser_ams_closed, A_tot_ams_closed, \
-    share_agr_nps, share_man_nps, share_trd_nps, share_bss_nps, share_fin_nps, share_nps_nps, A_tot_nps, \
-    share_agr_nps_closed, share_man_nps_closed, share_trd_nps_closed, share_bss_nps_closed, share_fin_nps_closed, share_nps_nps_closed, A_tot_nps_closed
+from model_calibration_USA_open import GDP_ph, E
 
 # Rename US Aggregates
 GDP_ph_USA, E_USA = GDP_ph, E
@@ -49,10 +42,7 @@ GDP_ph_USA, E_USA = GDP_ph, E
 # Import European model_country instances and EU aggregates from Step 5 — they
 # carry open-economy productivity and employment-share series that these
 # counterfactuals perturb.
-from model_test_europe_open import model_country, EUR4_h_tot, EURCORE_h_tot, EURPERI_h_tot,  EUR13_h_tot, EUR4_A_tot, EURCORE_A_tot, EURPERI_A_tot, EUR13_A_tot, EUR4_rel_A_tot, EUR13_rel_A_tot, EUR4_E, EUR13_E, EUR4_rel_E, EUR13_rel_E, \
-	EUR4_share_agr, EUR13_share_agr, EUR4_share_man, EUR13_share_man, EUR4_share_ser, EUR13_share_ser, EUR4_share_trd, EUR13_share_trd, EUR4_share_bss, EUR13_share_bss, EUR4_share_fin, EUR13_share_fin, EUR4_share_nps, EUR13_share_nps, \
-	EUR4_share_agr_ams_m, EUR13_share_agr_ams_m, EUR4_share_agr_nps_m, EUR13_share_agr_nps_m, EUR4_share_man_ams_m, EUR13_share_man_ams_m, EUR4_share_man_nps_m, EUR13_share_man_nps_m, EUR4_share_ser_ams_m, EUR13_share_ser_ams_m, EUR4_share_trd_nps_m, EUR13_share_trd_nps_m, EUR4_share_bss_nps_m, EUR13_share_bss_nps_m, EUR4_share_fin_nps_m, EUR13_share_fin_nps_m, EUR4_share_nps_nps_m, EUR13_share_nps_nps_m, \
-	EUR4_A_tot_ams, EUR13_A_tot_ams, EUR4_A_tot_nps, EURCORE_A_tot_nps, EURPERI_A_tot_nps, EUR13_A_tot_nps
+from model_test_europe_open import model_country, EUR4_h_tot, EURCORE_h_tot, EURPERI_h_tot,  EUR13_h_tot
 
 
 AUT = model_country('AUT')

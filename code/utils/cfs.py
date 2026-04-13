@@ -24,10 +24,9 @@ Dependencies: utils.table_1_ss_eu4 (Step 14) — provides shift_share and base L
 
 import pandas as pd
 import pickle
-import statsmodels.api as sm
 from matplotlib import rc
 import numpy as np
-from .table_1_ss_eu4 import shift_share, annualized, lp_1970_us_nps, lp_1995_us_nps, lp_2019_us_nps, lp_1970_eu_nps, lp_1995_eu_nps, lp_2019_eu_nps, l_1970_us_nps, l_1995_us_nps, l_2019_us_nps, l_1970_eu_nps, l_1995_eu_nps, l_2019_eu_nps
+from .table_1_ss_eu4 import shift_share, annualized, lp_1970_eu_nps, lp_2019_eu_nps, l_1970_eu_nps, l_2019_eu_nps
 rc('text', usetex=True)
 rc('font', family='serif')
 
