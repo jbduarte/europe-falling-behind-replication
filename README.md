@@ -41,16 +41,18 @@ The active replication pipeline (`master.py`) reads pre-built datasets from `dat
 
 ### Run order
 
-If regenerating from sources, run the scripts from inside `code/data_construction/` in this order:
+If regenerating from sources, run the scripts **from the `code/` folder** (paths in the scripts are relative to `code/`, not to `code/data_construction/`):
 
 ```bash
-cd code/data_construction
-python get_EUKLEMS.py          # downloads raw EU KLEMS releases (2009/2017/2021/2023)
-python get_WorldKLEMS_USA.py   # downloads the 2013 US World KLEMS release
-python get_penn_table.py       # downloads PWT 10.0 -> data/penn_gdp.xlsx
-python select_data.py          # filters EU KLEMS to EU15+US, six-sector mapping
-python add_EU15_OECD.py        # builds EU15 aggregate -> data/raw/OECD_GDP_ph_EU15.xlsx
+cd code
+python data_construction/get_EUKLEMS.py          # downloads EU KLEMS 2009 + 2023 (both needed)
+python data_construction/get_WorldKLEMS_USA.py   # downloads the 2013 US World KLEMS release
+python data_construction/get_penn_table.py       # downloads PWT 10.0 -> data/penn_gdp.xlsx
+python data_construction/select_data.py          # builds data/euklems_2009.csv then data/euklems_2023.csv
+python data_construction/add_EU15_OECD.py        # builds EU15 aggregate -> data/raw/OECD_GDP_ph_EU15.xlsx
 ```
+
+Note: the paper covers 1970-2019 but the EU KLEMS 2023 release only starts in 1995. `select_data.py` back-extrapolates 1970-1994 using growth rates from the EU KLEMS 2009 release, which is why both releases are downloaded and processed.
 
 ### Files produced by each script
 

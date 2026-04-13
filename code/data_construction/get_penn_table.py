@@ -22,10 +22,13 @@ joins with EUKLEMS (which uses ISO2) work.
 import pandas as pd
 import country_converter as coco
 
+import os
+
 data_temp = pd.read_excel('https://www.rug.nl/ggdc/docs/pwt100.xlsx',
                           sheet_name='Data')
 
 # Cache the raw download before any transformation.
+os.makedirs('../data/raw_data/Penn_table', exist_ok=True)
 data_temp.to_excel('../data/raw_data/Penn_table/penn.xlsx', index=False)
 
 iso2_list = coco.convert(names=data_temp['countrycode'].values, to='ISO2', not_found=None)

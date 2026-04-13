@@ -547,6 +547,13 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         print('No data found for release ' + release)
 
 
+# Order matters: the 2023 branch (1970-2019) reads data/euklems_2009.csv to
+# back-extrapolate via growth rates for 1970-1994, so the 2009 panel must be
+# built first.
 select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR", "IE", "IT", "LU", "NL", "PT", "ES", "SE", "GB"),
-                sample_period=(1970, 2019),
-                release="2023")
+            sample_period=(1970, 2009),
+            release="2009")
+
+select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR", "IE", "IT", "LU", "NL", "PT", "ES", "SE", "GB"),
+            sample_period=(1970, 2019),
+            release="2023")
