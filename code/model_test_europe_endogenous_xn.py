@@ -2337,91 +2337,76 @@ plt.plot(AUT.A_tot)
 plt.plot(AUT.A_tot_nps, "--")
 plt.plot(AUT.A_tot_nps_closed, "-.")
 plt.title("AUT")
-plt.show()
 
 plt.plot(BEL.A_tot)
 plt.plot(BEL.A_tot_nps, "--")
 plt.plot(BEL.A_tot_nps_closed, "-.")
 plt.title("BEL")
-plt.show()
 
 plt.plot(DEU.A_tot)
 plt.plot(DEU.A_tot_nps, "--")
 plt.plot(DEU.A_tot_nps_closed, "-.")
 plt.title("DEU")
-plt.show()
 
 plt.plot(DNK.A_tot)
 plt.plot(DNK.A_tot_nps, "--")
 plt.plot(DNK.A_tot_nps_closed, "-.")
 plt.title("DNK")
-plt.show()
 
 plt.plot(ESP.A_tot)
 plt.plot(ESP.A_tot_nps, "--")
 plt.plot(ESP.A_tot_nps_closed, "-.")
 plt.title("ESP")
-plt.show()
 
 plt.plot(FIN.A_tot)
 plt.plot(FIN.A_tot_nps, "--")
 plt.plot(FIN.A_tot_nps_closed, "-.")
 plt.title("FIN")
-plt.show()
 
 plt.plot(FRA.A_tot)
 plt.plot(FRA.A_tot_nps, "--")
 plt.plot(FRA.A_tot_nps_closed, "-.")
 plt.title("FRA")
-plt.show()
 
 plt.plot(GBR.A_tot)
 plt.plot(GBR.A_tot_nps, "--")
 plt.plot(GBR.A_tot_nps_closed, "-.")
 plt.title("GBR")
-plt.show()
 
 plt.plot(GRC.A_tot)
 plt.plot(GRC.A_tot_nps, "--")
 plt.plot(GRC.A_tot_nps_closed, "-.")
 plt.title("GRC")
-plt.show()
 
 plt.plot(IRL.A_tot)
 plt.plot(IRL.A_tot_nps, "--")
 plt.plot(IRL.A_tot_nps_closed, "-.")
 plt.title("IRL")
-plt.show()
 
 plt.plot(ITA.A_tot)
 plt.plot(ITA.A_tot_nps, "--")
 plt.plot(ITA.A_tot_nps_closed, "-.")
 plt.title("ITA")
-plt.show()
 
 plt.plot(LUX.A_tot)
 plt.plot(LUX.A_tot_nps, "--")
 plt.plot(LUX.A_tot_nps_closed, "-.")
 plt.title("LUX")
-plt.show()
 
 plt.plot(NLD.year, NLD.A_tot)
 plt.plot(NLD.year, NLD.A_tot_nps, "--")
 plt.plot(NLD.year, NLD.A_tot_nps_closed, "-.")
 plt.title("NLD")
-plt.show()
 
 plt.plot(PRT.A_tot)
 plt.plot(PRT.A_tot_nps, "--")
 plt.plot(PRT.A_tot_nps_closed, "-.")
 plt.title("PRT")
-plt.show()
 
 plt.plot(SWE.A_tot)
 plt.plot(SWE.A_tot_nps, "--")
 plt.plot(SWE.A_tot_nps_closed, "-.")
 plt.title("SWE")
-plt.show()
 
 
 plt.plot(DEU.year, DEU.share_agr, "g-", label="agr")
@@ -2439,7 +2424,6 @@ plt.plot(DEU.year, DEU.share_ser_ams_m_closed, "r-.")
 plt.title("DEU")
 plt.legend()
 plt.grid()
-plt.show()
 
 plt.plot(DEU.year, DEU.share_agr, "g-", label="agr")
 plt.plot(DEU.year, DEU.share_agr_nps_m, "g--")
@@ -2469,7 +2453,6 @@ plt.plot(DEU.year, DEU.share_nps_nps_m_closed, "y-.")
 plt.title("DEU")
 plt.legend()
 plt.grid()
-plt.show()
 
 plt.plot(PRT.year, PRT.share_agr, "g-", label="agr")
 plt.plot(PRT.year, PRT.share_agr_ams_m, "g--")
@@ -2486,7 +2469,6 @@ plt.plot(PRT.year, PRT.share_ser_ams_m_closed, "r-.")
 plt.title("PRT")
 plt.legend()
 plt.grid()
-plt.show()
 
 
 plt.plot(PRT.year, PRT.share_agr, "g-", label="agr")
@@ -2517,7 +2499,6 @@ plt.plot(PRT.year, PRT.share_nps_nps_m_closed, "y-.")
 plt.title("PRT")
 plt.legend()
 plt.grid()
-plt.show()
 
 plt.plot(GBR.year, GBR.share_agr, "g-", label="agr")
 plt.plot(GBR.year, GBR.share_agr_ams_m, "g--")
@@ -2534,7 +2515,6 @@ plt.plot(GBR.year, GBR.share_ser_ams_m_closed, "r-.")
 plt.title("GBR")
 plt.legend()
 plt.grid()
-plt.show()
 
 
 plt.plot(GBR.year, GBR.share_agr, "g-", label="agr")
@@ -2565,7 +2545,6 @@ plt.plot(GBR.year, GBR.share_nps_nps_m_closed, "y-.")
 plt.title("GBR")
 plt.legend()
 plt.grid()
-plt.show()
 
 
 "Productivity and GDP in Europe"
@@ -6532,7 +6511,6 @@ plt.ylabel("Model", fontsize=10)
 fig.legend(handles, labels, loc=9, bbox_to_anchor=(0.5, 0.02), ncol=2, fontsize=14)
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_test.pdf', bbox_inches="tight")
-plt.show()
 
 
 "Test of the Theory as Time Series"
@@ -6723,7 +6701,6 @@ plt.xticks([1995, 2005, 2020], fontsize=10)
 
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_test_A_EUR_countries.pdf', bbox_inches="tight")
-plt.show()
 
 
 fig = plt.figure()
@@ -6792,7 +6769,6 @@ plt.grid()
 
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_test_A_EUR.pdf', bbox_inches="tight")
-plt.show()
 """
 """
 ---------------------------
@@ -6924,7 +6900,6 @@ fig.legend(handles, labels, loc=9, bbox_to_anchor=(0.5, 0.02), ncol=4, fontsize=
 
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_1.pdf', bbox_inches="tight")
-plt.show()
 
 
 # FIGURE 2
@@ -7166,7 +7141,6 @@ plt.grid()
 
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_2.pdf', bbox_inches="tight")
-plt.show()
 """
 """
 ---------------------------
@@ -7569,7 +7543,6 @@ plt.grid()
 
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_test_EUR_appendix.pdf', bbox_inches="tight")
-plt.show()
 
 # FIG TEST EUROPE APPENDIX
 fig = plt.figure()
@@ -7966,7 +7939,6 @@ plt.grid()
 
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_test_EUR_2_appendix.pdf', bbox_inches="tight")
-plt.show()
 """
 
 """
@@ -8144,7 +8116,6 @@ plt.grid()
 
 plt.tight_layout()
 # plt.savefig('../output/figures/fig_2_ams.pdf', bbox_inches="tight")
-plt.show()
 
 
 
@@ -8327,7 +8298,6 @@ xn_ser_endo_plot = xn_ser_endo + np.array(DEU.nx_ser_E)[0] - xn_ser_endo[0]
 plt.plot(DEU.nx_ser_E)
 plt.plot(DEU.nx_ser_E.index, xn_ser_endo_plot, "--")
 plt.title(f"Best-fit beta (last period): {beta_ser_last:.4f}")
-plt.show()
 
 # Log-log regression: log(1 + net exports) vs log(productivity)
 

@@ -762,7 +762,7 @@ for sec in ['agr', 'man', 'ser']:
 				np.array([(np.array(DEU.h_tot)[0]*(DEU_cf.ss_A_ams_init/DEU_cf.ss_A_base_ams_init-1)*100 + np.array(FRA.h_tot)[0]*(FRA_cf.ss_A_ams_init/FRA_cf.ss_A_base_ams_init-1)*100 + np.array(ITA.h_tot)[0]*(ITA_cf.ss_A_ams_init/ITA_cf.ss_A_base_ams_init-1)*100 + np.array(GBR.h_tot)[0]*(GBR_cf.ss_A_ams_init/GBR_cf.ss_A_base_ams_init-1)*100)/EUR4_h_tot[0]]),
 				np.array([(np.array(AUT.h_tot)[0]*(AUT_cf.ss_A_ams_init/AUT_cf.ss_A_base_ams_init-1)*100 + np.array(BEL.h_tot)[0]*(BEL_cf.ss_A_ams_init/BEL_cf.ss_A_base_ams_init-1)*100 + np.array(DEU.h_tot)[0]*(DEU_cf.ss_A_ams_init/DEU_cf.ss_A_base_ams_init-1)*100 + np.array(DNK.h_tot)[0]*(DNK_cf.ss_A_ams_init/DNK_cf.ss_A_base_ams_init-1)*100 + np.array(ESP.h_tot)[0]*(ESP_cf.ss_A_ams_init/ESP_cf.ss_A_base_ams_init-1)*100 + np.array(FIN.h_tot)[0]*(FIN_cf.ss_A_ams_init/FIN_cf.ss_A_base_ams_init-1)*100 + np.array(FRA.h_tot)[0]*(FRA_cf.ss_A_ams_init/FRA_cf.ss_A_base_ams_init-1)*100 + np.array(GBR.h_tot)[0]*(GBR_cf.ss_A_ams_init/GBR_cf.ss_A_base_ams_init-1)*100 + np.array(GRC.h_tot)[0]*(GRC_cf.ss_A_ams_init/GRC_cf.ss_A_base_ams_init-1)*100 + np.array(IRL.h_tot)[0]*(IRL_cf.ss_A_ams_init/IRL_cf.ss_A_base_ams_init-1)*100 + np.array(ITA.h_tot)[0]*(ITA_cf.ss_A_ams_init/ITA_cf.ss_A_base_ams_init-1)*100 + np.array(LUX.h_tot)[0]*(LUX_cf.ss_A_ams_init/LUX_cf.ss_A_base_ams_init-1)*100 + np.array(NLD.h_tot)[0]*(NLD_cf.ss_A_ams_init/NLD_cf.ss_A_base_ams_init-1)*100 + np.array(PRT.h_tot)[0]*(PRT_cf.ss_A_ams_init/PRT_cf.ss_A_base_ams_init-1)*100 + np.array(SWE.h_tot)[0]*(SWE_cf.ss_A_ams_init/SWE_cf.ss_A_base_ams_init-1)*100)/EUR15_h_tot[0]])]
 
-	cf_1_sec_ams_init_ss[1:] = [ '%.1f' % elem for elem in cf_1_sec_ams_init_ss[1:] ]
+	cf_1_sec_ams_init_ss[1:] = [ '%.1f' % float(elem) for elem in cf_1_sec_ams_init_ss[1:] ]
 	cf_1_ams_ss_init.append(cf_1_sec_ams_init_ss)
 
 	cf_1_sec_ams_ss = 	[sec,
@@ -784,7 +784,7 @@ for sec in ['agr', 'man', 'ser']:
 				np.array([(np.array(DEU.h_tot)[-1]*(np.array(DEU_cf.ss_A_ams)[-1]/np.array(DEU_cf.ss_A_base_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf.ss_A_ams)[-1]/np.array(FRA_cf.ss_A_base_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf.ss_A_ams)[-1]/np.array(ITA_cf.ss_A_base_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf.ss_A_ams)[-1]/np.array(GBR_cf.ss_A_base_ams)[-1]-1)*100)/EUR4_h_tot[-1]]),
 				np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf.ss_A_ams)[-1]/np.array(AUT_cf.ss_A_base_ams)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf.ss_A_ams)[-1]/np.array(BEL_cf.ss_A_base_ams)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf.ss_A_ams)[-1]/np.array(DEU_cf.ss_A_base_ams)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf.ss_A_ams)[-1]/np.array(DNK_cf.ss_A_base_ams)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf.ss_A_ams)[-1]/np.array(ESP_cf.ss_A_base_ams)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf.ss_A_ams)[-1]/np.array(FIN_cf.ss_A_base_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf.ss_A_ams)[-1]/np.array(FRA_cf.ss_A_base_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf.ss_A_ams)[-1]/np.array(GBR_cf.ss_A_base_ams)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GRC_cf.ss_A_ams)[-1]/np.array(GRC_cf.ss_A_base_ams)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf.ss_A_ams)[-1]/np.array(IRL_cf.ss_A_base_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf.ss_A_ams)[-1]/np.array(ITA_cf.ss_A_base_ams)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf.ss_A_ams)[-1]/np.array(LUX_cf.ss_A_base_ams)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf.ss_A_ams)[-1]/np.array(NLD_cf.ss_A_base_ams)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf.ss_A_ams)[-1]/np.array(PRT_cf.ss_A_base_ams)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf.ss_A_ams)[-1]/np.array(SWE_cf.ss_A_base_ams)[-1]-1)*100)/EUR15_h_tot[-1]])]
 	
-	cf_1_sec_ams_ss[1:] = [ '%.1f' % elem for elem in cf_1_sec_ams_ss[1:] ]
+	cf_1_sec_ams_ss[1:] = [ '%.1f' % float(elem) for elem in cf_1_sec_ams_ss[1:] ]
 	cf_1_ams_ss.append(cf_1_sec_ams_ss)
 
 	cf_1_sec_ams = 	[sec,
@@ -805,7 +805,7 @@ for sec in ['agr', 'man', 'ser']:
 				(np.array(SWE_cf.A_tot_ams)[-1]/np.array(SWE.A_tot_ams)[-1]-1)*100,
 				np.array([(np.array(DEU.h_tot)[-1]*(np.array(DEU_cf.A_tot_ams)[-1]/np.array(DEU.A_tot_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf.A_tot_ams)[-1]/np.array(FRA.A_tot_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf.A_tot_ams)[-1]/np.array(ITA.A_tot_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf.A_tot_ams)[-1]/np.array(GBR.A_tot_ams)[-1]-1)*100)/EUR4_h_tot[-1]]),
 				np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf.A_tot_ams)[-1]/np.array(AUT.A_tot_ams)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf.A_tot_ams)[-1]/np.array(BEL.A_tot_ams)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf.A_tot_ams)[-1]/np.array(DEU.A_tot_ams)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf.A_tot_ams)[-1]/np.array(DNK.A_tot_ams)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf.A_tot_ams)[-1]/np.array(ESP.A_tot_ams)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf.A_tot_ams)[-1]/np.array(FIN.A_tot_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf.A_tot_ams)[-1]/np.array(FRA.A_tot_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf.A_tot_ams)[-1]/np.array(GBR.A_tot_ams)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GBR_cf.A_tot_ams)[-1]/np.array(GBR.A_tot_ams)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf.A_tot_ams)[-1]/np.array(IRL.A_tot_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf.A_tot_ams)[-1]/np.array(ITA.A_tot_ams)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf.A_tot_ams)[-1]/np.array(LUX.A_tot_ams)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf.A_tot_ams)[-1]/np.array(NLD.A_tot_ams)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf.A_tot_ams)[-1]/np.array(PRT.A_tot_ams)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf.A_tot_ams)[-1]/np.array(SWE.A_tot_ams)[-1]-1)*100)/EUR15_h_tot[-1]])]
-	cf_1_sec_ams[1:] = [ '%.1f' % elem for elem in cf_1_sec_ams[1:] ]
+	cf_1_sec_ams[1:] = [ '%.1f' % float(elem) for elem in cf_1_sec_ams[1:] ]
 	cf_1_ams.append(cf_1_sec_ams)
 
 pd.DataFrame(cf_1_ams_ss_init).to_excel('../output/figures/Counterfactual_1_ams_ss_init.xlsx', index = False, header = False)
@@ -910,7 +910,7 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'prs', 'nps']:
 				np.array([(np.array(AUT.h_tot)[0]*(AUT_cf.ss_A_nps_init/AUT_cf.ss_A_base_nps_init-1)*100 + np.array(BEL.h_tot)[0]*(BEL_cf.ss_A_nps_init/BEL_cf.ss_A_base_nps_init-1)*100 + np.array(DEU.h_tot)[0]*(DEU_cf.ss_A_nps_init/DEU_cf.ss_A_base_nps_init-1)*100 + np.array(DNK.h_tot)[0]*(DNK_cf.ss_A_nps_init/DNK_cf.ss_A_base_nps_init-1)*100 + np.array(ESP.h_tot)[0]*(ESP_cf.ss_A_nps_init/ESP_cf.ss_A_base_nps_init-1)*100 + np.array(FIN.h_tot)[0]*(FIN_cf.ss_A_nps_init/FIN_cf.ss_A_base_nps_init-1)*100 + np.array(FRA.h_tot)[0]*(FRA_cf.ss_A_nps_init/FRA_cf.ss_A_base_nps_init-1)*100 + np.array(GBR.h_tot)[0]*(GBR_cf.ss_A_nps_init/GBR_cf.ss_A_base_nps_init-1)*100 + np.array(GRC.h_tot)[0]*(GRC_cf.ss_A_nps_init/GRC_cf.ss_A_base_nps_init-1)*100 + np.array(IRL.h_tot)[0]*(IRL_cf.ss_A_nps_init/IRL_cf.ss_A_base_nps_init-1)*100 + np.array(ITA.h_tot)[0]*(ITA_cf.ss_A_nps_init/ITA_cf.ss_A_base_nps_init-1)*100 + np.array(LUX.h_tot)[0]*(LUX_cf.ss_A_nps_init/LUX_cf.ss_A_base_nps_init-1)*100 + np.array(NLD.h_tot)[0]*(NLD_cf.ss_A_nps_init/NLD_cf.ss_A_base_nps_init-1)*100 + np.array(PRT.h_tot)[0]*(PRT_cf.ss_A_nps_init/PRT_cf.ss_A_base_nps_init-1)*100 + np.array(SWE.h_tot)[0]*(SWE_cf.ss_A_nps_init/SWE_cf.ss_A_base_nps_init-1)*100)/EUR15_h_tot[0]]),
 			    (EU15_cf.ss_A_nps_init/EU15_cf.ss_A_base_nps_init-1)*100]
 
-	cf_1_sec_nps_init_ss[1:] = [ '%.1f' % elem for elem in cf_1_sec_nps_init_ss[1:] ]
+	cf_1_sec_nps_init_ss[1:] = [ '%.1f' % float(elem) for elem in cf_1_sec_nps_init_ss[1:] ]
 	cf_1_nps_ss_init.append(cf_1_sec_nps_init_ss)
 
 	cf_1_sec_nps_ss = 	[sec,
@@ -935,7 +935,7 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'prs', 'nps']:
 				np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf.ss_A_nps)[-1]/np.array(AUT_cf.ss_A_base_nps)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf.ss_A_nps)[-1]/np.array(BEL_cf.ss_A_base_nps)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf.ss_A_nps)[-1]/np.array(DEU_cf.ss_A_base_nps)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf.ss_A_nps)[-1]/np.array(DNK_cf.ss_A_base_nps)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf.ss_A_nps)[-1]/np.array(ESP_cf.ss_A_base_nps)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf.ss_A_nps)[-1]/np.array(FIN_cf.ss_A_base_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf.ss_A_nps)[-1]/np.array(FRA_cf.ss_A_base_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf.ss_A_nps)[-1]/np.array(GBR_cf.ss_A_base_nps)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GRC_cf.ss_A_nps)[-1]/np.array(GRC_cf.ss_A_base_nps)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf.ss_A_nps)[-1]/np.array(IRL_cf.ss_A_base_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf.ss_A_nps)[-1]/np.array(ITA_cf.ss_A_base_nps)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf.ss_A_nps)[-1]/np.array(LUX_cf.ss_A_base_nps)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf.ss_A_nps)[-1]/np.array(NLD_cf.ss_A_base_nps)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf.ss_A_nps)[-1]/np.array(PRT_cf.ss_A_base_nps)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf.ss_A_nps)[-1]/np.array(SWE_cf.ss_A_base_nps)[-1]-1)*100)/EUR15_h_tot[-1]]),
 				(np.array(EU15_cf.ss_A_nps)[-1] / np.array(EU15_cf.ss_A_base_nps)[-1] - 1) * 100]
 
-	cf_1_sec_nps_ss[1:] = [ '%.1f' % elem for elem in cf_1_sec_nps_ss[1:] ]
+	cf_1_sec_nps_ss[1:] = [ '%.1f' % float(elem) for elem in cf_1_sec_nps_ss[1:] ]
 	cf_1_nps_ss.append(cf_1_sec_nps_ss)
 
 	cf_1_sec_nps = 	[sec,
@@ -959,7 +959,7 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'prs', 'nps']:
 				np.array([(np.array(GRC.h_tot)[-1]*(np.array(GRC_cf.A_tot_nps)[-1]/np.array(GRC.A_tot_nps)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf.A_tot_nps)[-1]/np.array(IRL.A_tot_nps)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf.A_tot_nps)[-1]/np.array(PRT.A_tot_nps)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf.A_tot_nps)[-1]/np.array(ESP.A_tot_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf.A_tot_nps)[-1]/np.array(ITA.A_tot_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100)/EURPERI_h_tot[-1]]),
 				np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf.A_tot_nps)[-1]/np.array(AUT.A_tot_nps)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf.A_tot_nps)[-1]/np.array(BEL.A_tot_nps)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf.A_tot_nps)[-1]/np.array(DEU.A_tot_nps)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf.A_tot_nps)[-1]/np.array(DNK.A_tot_nps)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf.A_tot_nps)[-1]/np.array(ESP.A_tot_nps)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf.A_tot_nps)[-1]/np.array(FIN.A_tot_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf.A_tot_nps)[-1]/np.array(FRA.A_tot_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GBR_cf.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf.A_tot_nps)[-1]/np.array(IRL.A_tot_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf.A_tot_nps)[-1]/np.array(ITA.A_tot_nps)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf.A_tot_nps)[-1]/np.array(LUX.A_tot_nps)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf.A_tot_nps)[-1]/np.array(NLD.A_tot_nps)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf.A_tot_nps)[-1]/np.array(PRT.A_tot_nps)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf.A_tot_nps)[-1]/np.array(SWE.A_tot_nps)[-1]-1)*100)/EUR15_h_tot[-1]]),
 				(np.array(EU15_cf.A_tot_nps)[-1] / np.array(EU15.A_tot_nps)[-1] - 1) * 100]
-	cf_1_sec_nps[1:] = [ '%.1f' % elem for elem in cf_1_sec_nps[1:] ]
+	cf_1_sec_nps[1:] = [ '%.1f' % float(elem) for elem in cf_1_sec_nps[1:] ]
 	cf_1_nps.append(cf_1_sec_nps)
 
 	# save results
@@ -1179,7 +1179,7 @@ for sec in ['agr', 'man', 'ser']:
 				np.array([(np.array(DEU.h_tot)[0]*(DEU_cf2.ss_A_ams_init_2/DEU_cf2.ss_A_base_ams_init_2-1)*100 + np.array(FRA.h_tot)[0]*(FRA_cf2.ss_A_ams_init_2/FRA_cf2.ss_A_base_ams_init_2-1)*100 + np.array(ITA.h_tot)[0]*(ITA_cf2.ss_A_ams_init_2/ITA_cf2.ss_A_base_ams_init_2-1)*100 + np.array(GBR.h_tot)[0]*(GBR_cf2.ss_A_ams_init_2/GBR_cf2.ss_A_base_ams_init_2-1)*100)/EUR4_h_tot[0]]),
 				np.array([(np.array(AUT.h_tot)[0]*(AUT_cf2.ss_A_ams_init_2/AUT_cf2.ss_A_base_ams_init_2-1)*100 + np.array(BEL.h_tot)[0]*(BEL_cf2.ss_A_ams_init_2/BEL_cf2.ss_A_base_ams_init_2-1)*100 + np.array(DEU.h_tot)[0]*(DEU_cf2.ss_A_ams_init_2/DEU_cf2.ss_A_base_ams_init_2-1)*100 + np.array(DNK.h_tot)[0]*(DNK_cf2.ss_A_ams_init_2/DNK_cf2.ss_A_base_ams_init_2-1)*100 + np.array(ESP.h_tot)[0]*(ESP_cf2.ss_A_ams_init_2/ESP_cf2.ss_A_base_ams_init_2-1)*100 + np.array(FIN.h_tot)[0]*(FIN_cf2.ss_A_ams_init_2/FIN_cf2.ss_A_base_ams_init_2-1)*100 + np.array(FRA.h_tot)[0]*(FRA_cf2.ss_A_ams_init_2/FRA_cf2.ss_A_base_ams_init_2-1)*100 + np.array(GBR.h_tot)[0]*(GBR_cf2.ss_A_ams_init_2/GBR_cf2.ss_A_base_ams_init_2-1)*100 + np.array(GRC.h_tot)[0]*(GRC_cf2.ss_A_ams_init_2/GRC_cf2.ss_A_base_ams_init_2-1)*100 + np.array(IRL.h_tot)[0]*(IRL_cf2.ss_A_ams_init_2/IRL_cf2.ss_A_base_ams_init_2-1)*100 + np.array(ITA.h_tot)[0]*(ITA_cf2.ss_A_ams_init_2/ITA_cf2.ss_A_base_ams_init_2-1)*100 + np.array(LUX.h_tot)[0]*(LUX_cf2.ss_A_ams_init_2/LUX_cf2.ss_A_base_ams_init_2-1)*100 + np.array(NLD.h_tot)[0]*(NLD_cf2.ss_A_ams_init_2/NLD_cf2.ss_A_base_ams_init_2-1)*100 + np.array(PRT.h_tot)[0]*(PRT_cf2.ss_A_ams_init_2/PRT_cf2.ss_A_base_ams_init_2-1)*100 + np.array(SWE.h_tot)[0]*(SWE_cf2.ss_A_ams_init_2/SWE_cf2.ss_A_base_ams_init_2-1)*100)/EUR15_h_tot[0]])]
 
-	cf_2_sec_ams_init_ss[1:] = [ '%.1f' % elem for elem in cf_2_sec_ams_init_ss[1:] ]
+	cf_2_sec_ams_init_ss[1:] = [ '%.1f' % float(elem) for elem in cf_2_sec_ams_init_ss[1:] ]
 	cf_2_ams_ss_init.append(cf_2_sec_ams_init_ss)
 
 	cf_2_sec_ams_ss = 	[sec,
@@ -1201,7 +1201,7 @@ for sec in ['agr', 'man', 'ser']:
 				np.array([(np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2.ss_A_ams)[-1]/np.array(DEU_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2.ss_A_ams)[-1]/np.array(FRA_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2.ss_A_ams)[-1]/np.array(ITA_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2.ss_A_ams)[-1]/np.array(GBR_cf2.ss_A_base_ams)[-1]-1)*100)/EUR4_h_tot[-1]]),
 				np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf2.ss_A_ams)[-1]/np.array(AUT_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf2.ss_A_ams)[-1]/np.array(BEL_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2.ss_A_ams)[-1]/np.array(DEU_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf2.ss_A_ams)[-1]/np.array(DNK_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf2.ss_A_ams)[-1]/np.array(ESP_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf2.ss_A_ams)[-1]/np.array(FIN_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2.ss_A_ams)[-1]/np.array(FRA_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2.ss_A_ams)[-1]/np.array(GBR_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GRC_cf2.ss_A_ams)[-1]/np.array(GRC_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf2.ss_A_ams)[-1]/np.array(IRL_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2.ss_A_ams)[-1]/np.array(ITA_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf2.ss_A_ams)[-1]/np.array(LUX_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf2.ss_A_ams)[-1]/np.array(NLD_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf2.ss_A_ams)[-1]/np.array(PRT_cf2.ss_A_base_ams)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf2.ss_A_ams)[-1]/np.array(SWE_cf2.ss_A_base_ams)[-1]-1)*100)/EUR15_h_tot[-1]])]
 
-	cf_2_sec_ams_ss[1:] = [ '%.1f' % elem for elem in cf_2_sec_ams_ss[1:] ]
+	cf_2_sec_ams_ss[1:] = [ '%.1f' % float(elem) for elem in cf_2_sec_ams_ss[1:] ]
 	cf_2_ams_ss.append(cf_2_sec_ams_ss)
 
 	cf_2_sec_ams = 	[sec,
@@ -1222,7 +1222,7 @@ for sec in ['agr', 'man', 'ser']:
 				(np.array(SWE_cf2.A_tot_ams)[-1]/np.array(SWE.A_tot_ams)[-1]-1)*100,
 				np.array([(np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2.A_tot_ams)[-1]/np.array(DEU.A_tot_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2.A_tot_ams)[-1]/np.array(FRA.A_tot_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2.A_tot_ams)[-1]/np.array(ITA.A_tot_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2.A_tot_ams)[-1]/np.array(GBR.A_tot_ams)[-1]-1)*100)/EUR4_h_tot[-1]]),
 				np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf2.A_tot_ams)[-1]/np.array(AUT.A_tot_ams)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf2.A_tot_ams)[-1]/np.array(BEL.A_tot_ams)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2.A_tot_ams)[-1]/np.array(DEU.A_tot_ams)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf2.A_tot_ams)[-1]/np.array(DNK.A_tot_ams)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf2.A_tot_ams)[-1]/np.array(ESP.A_tot_ams)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf2.A_tot_ams)[-1]/np.array(FIN.A_tot_ams)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2.A_tot_ams)[-1]/np.array(FRA.A_tot_ams)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2.A_tot_ams)[-1]/np.array(GBR.A_tot_ams)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GBR_cf2.A_tot_ams)[-1]/np.array(GBR.A_tot_ams)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf2.A_tot_ams)[-1]/np.array(IRL.A_tot_ams)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2.A_tot_ams)[-1]/np.array(ITA.A_tot_ams)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf2.A_tot_ams)[-1]/np.array(LUX.A_tot_ams)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf2.A_tot_ams)[-1]/np.array(NLD.A_tot_ams)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf2.A_tot_ams)[-1]/np.array(PRT.A_tot_ams)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf2.A_tot_ams)[-1]/np.array(SWE.A_tot_ams)[-1]-1)*100)/EUR15_h_tot[-1]])]
-	cf_2_sec_ams[1:] = [ '%.1f' % elem for elem in cf_2_sec_ams[1:] ]
+	cf_2_sec_ams[1:] = [ '%.1f' % float(elem) for elem in cf_2_sec_ams[1:] ]
 	cf_2_ams.append(cf_2_sec_ams)
 
 pd.DataFrame(cf_2_ams_ss_init).to_excel('../output/figures/Counterfactual_2_ams_ss_init.xlsx', index = False, header = False)
@@ -1328,7 +1328,7 @@ cf_2_sec_nps_init_ss = 	[
 			np.array([(np.array(AUT.h_tot)[0]*(AUT_cf2.ss_A_nps_init_2/AUT_cf2.ss_A_base_nps_init_2-1)*100 + np.array(BEL.h_tot)[0]*(BEL_cf2.ss_A_nps_init_2/BEL_cf2.ss_A_base_nps_init_2-1)*100 + np.array(DEU.h_tot)[0]*(DEU_cf2.ss_A_nps_init_2/DEU_cf2.ss_A_base_nps_init_2-1)*100 + np.array(DNK.h_tot)[0]*(DNK_cf2.ss_A_nps_init_2/DNK_cf2.ss_A_base_nps_init_2-1)*100 + np.array(ESP.h_tot)[0]*(ESP_cf2.ss_A_nps_init_2/ESP_cf2.ss_A_base_nps_init_2-1)*100 + np.array(FIN.h_tot)[0]*(FIN_cf2.ss_A_nps_init_2/FIN_cf2.ss_A_base_nps_init_2-1)*100 + np.array(FRA.h_tot)[0]*(FRA_cf2.ss_A_nps_init_2/FRA_cf2.ss_A_base_nps_init_2-1)*100 + np.array(GBR.h_tot)[0]*(GBR_cf2.ss_A_nps_init_2/GBR_cf2.ss_A_base_nps_init_2-1)*100 + np.array(GRC.h_tot)[0]*(GRC_cf2.ss_A_nps_init_2/GRC_cf2.ss_A_base_nps_init_2-1)*100 + np.array(IRL.h_tot)[0]*(IRL_cf2.ss_A_nps_init_2/IRL_cf2.ss_A_base_nps_init_2-1)*100 + np.array(ITA.h_tot)[0]*(ITA_cf2.ss_A_nps_init_2/ITA_cf2.ss_A_base_nps_init_2-1)*100 + np.array(LUX.h_tot)[0]*(LUX_cf2.ss_A_nps_init_2/LUX_cf2.ss_A_base_nps_init_2-1)*100 + np.array(NLD.h_tot)[0]*(NLD_cf2.ss_A_nps_init_2/NLD_cf2.ss_A_base_nps_init_2-1)*100 + np.array(PRT.h_tot)[0]*(PRT_cf2.ss_A_nps_init_2/PRT_cf2.ss_A_base_nps_init_2-1)*100 + np.array(SWE.h_tot)[0]*(SWE_cf2.ss_A_nps_init_2/SWE_cf2.ss_A_base_nps_init_2-1)*100)/EUR15_h_tot[0]]),
 			(EU15_cf2.ss_A_nps_init_2 / EU15_cf2.ss_A_base_nps_init_2 - 1) * 100]
 
-cf_2_sec_nps_init_ss[1:] = [ '%.1f' % elem for elem in cf_2_sec_nps_init_ss[1:] ]
+cf_2_sec_nps_init_ss[1:] = [ '%.1f' % float(elem) for elem in cf_2_sec_nps_init_ss[1:] ]
 cf_2_nps_ss_init.append(cf_2_sec_nps_init_ss)
 
 cf_2_sec_nps_ss = 	[
@@ -1353,7 +1353,7 @@ cf_2_sec_nps_ss = 	[
 			np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf2.ss_A_nps)[-1]/np.array(AUT_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf2.ss_A_nps)[-1]/np.array(BEL_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2.ss_A_nps)[-1]/np.array(DEU_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf2.ss_A_nps)[-1]/np.array(DNK_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf2.ss_A_nps)[-1]/np.array(ESP_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf2.ss_A_nps)[-1]/np.array(FIN_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2.ss_A_nps)[-1]/np.array(FRA_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2.ss_A_nps)[-1]/np.array(GBR_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GRC_cf2.ss_A_nps)[-1]/np.array(GRC_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf2.ss_A_nps)[-1]/np.array(IRL_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2.ss_A_nps)[-1]/np.array(ITA_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf2.ss_A_nps)[-1]/np.array(LUX_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf2.ss_A_nps)[-1]/np.array(NLD_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf2.ss_A_nps)[-1]/np.array(PRT_cf2.ss_A_base_nps)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf2.ss_A_nps)[-1]/np.array(SWE_cf2.ss_A_base_nps)[-1]-1)*100)/EUR15_h_tot[-1]]),
 			(np.array(EU15_cf2.ss_A_nps)[-1] / np.array(EU15_cf2.ss_A_base_nps)[-1] - 1) * 100]
 
-cf_2_sec_nps_ss[1:] = [ '%.1f' % elem for elem in cf_2_sec_nps_ss[1:] ]
+cf_2_sec_nps_ss[1:] = [ '%.1f' % float(elem) for elem in cf_2_sec_nps_ss[1:] ]
 cf_2_nps_ss.append(cf_2_sec_nps_ss)
 
 cf_2_sec_nps = 	[
@@ -1378,7 +1378,7 @@ cf_2_sec_nps = 	[
 			np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf2.A_tot_nps)[-1]/np.array(AUT.A_tot_nps)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(np.array(BEL_cf2.A_tot_nps)[-1]/np.array(BEL.A_tot_nps)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2.A_tot_nps)[-1]/np.array(DEU.A_tot_nps)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf2.A_tot_nps)[-1]/np.array(DNK.A_tot_nps)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf2.A_tot_nps)[-1]/np.array(ESP.A_tot_nps)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf2.A_tot_nps)[-1]/np.array(FIN.A_tot_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2.A_tot_nps)[-1]/np.array(FRA.A_tot_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GBR_cf2.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf2.A_tot_nps)[-1]/np.array(IRL.A_tot_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2.A_tot_nps)[-1]/np.array(ITA.A_tot_nps)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(np.array(LUX_cf2.A_tot_nps)[-1]/np.array(LUX.A_tot_nps)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf2.A_tot_nps)[-1]/np.array(NLD.A_tot_nps)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf2.A_tot_nps)[-1]/np.array(PRT.A_tot_nps)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf2.A_tot_nps)[-1]/np.array(SWE.A_tot_nps)[-1]-1)*100)/EUR15_h_tot[-1]]),
 			(np.array(EU15_cf2.A_tot_nps)[-1] / np.array(EU15.A_tot_nps)[-1] - 1) * 100]
 
-cf_2_sec_nps[1:] = [ '%.1f' % elem for elem in cf_2_sec_nps[1:] ]
+cf_2_sec_nps[1:] = [ '%.1f' % float(elem) for elem in cf_2_sec_nps[1:] ]
 cf_2_nps.append(cf_2_sec_nps)
 
 pd.DataFrame(cf_2_nps_ss_init).to_excel('../output/figures/Counterfactual_2_nps_ss_init.xlsx', index = False, header = False)
@@ -1537,7 +1537,7 @@ for sec in ['agr', 'man', 'ser']:
 									   EUR15_h_tot[-1]]),
 							 (E[-1] / np.array(EU15_cf2_catch.ss_A_base_ams)[-1] - 1) * 100]
 
-	cf_2_catch_sec_ams_ss[1:] = ['%.1f' % elem for elem in cf_2_catch_sec_ams_ss[1:]]
+	cf_2_catch_sec_ams_ss[1:] = ['%.1f' % float(elem) for elem in cf_2_catch_sec_ams_ss[1:]]
 	cf_2_catch_ams_ss.append(cf_2_catch_sec_ams_ss)
 
 	cf_2_catch_sec_ams = [sec,
@@ -1617,7 +1617,7 @@ for sec in ['agr', 'man', 'ser']:
 												EUR15_h_tot[-1] - np.array(BEL.h_tot)[-1] - np.array(LUX.h_tot)[-1])]),
 						  (np.array(EU15_cf2_catch.A_tot_ams)[-1] / np.array(EU15.A_tot_ams)[-1] - 1) * 100]
 
-	cf_2_catch_sec_ams[1:] = ['%.1f' % elem for elem in cf_2_catch_sec_ams[1:]]
+	cf_2_catch_sec_ams[1:] = ['%.1f' % float(elem) for elem in cf_2_catch_sec_ams[1:]]
 	cf_2_catch_ams.append(cf_2_catch_sec_ams)
 
 pd.DataFrame(cf_2_catch_ams_ss).to_excel('../output/figures/Counterfactual_2_catch_ams_ss.xlsx', index=False, header=False)
@@ -1703,7 +1703,7 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 				np.array([(np.array(AUT.h_tot)[-1]*(E[-1]/np.array(AUT_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(BEL.h_tot)[-1]*(E[-1]/np.array(BEL_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(E[-1]/np.array(DEU_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(E[-1]/np.array(DNK_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(E[-1]/np.array(ESP_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(E[-1]/np.array(FIN_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(E[-1]/np.array(FRA_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(E[-1]/np.array(GBR_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(E[-1]/np.array(GRC_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(E[-1]/np.array(IRL_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(E[-1]/np.array(ITA_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(LUX.h_tot)[-1]*(E[-1]/np.array(LUX_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(E[-1]/np.array(NLD_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(E[-1]/np.array(PRT_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(E[-1]/np.array(SWE_cf2_catch.ss_A_base_nps)[-1]-1)*100)/EUR15_h_tot[-1]]),
 				(E[-1] / np.array(EU15_cf2_catch.ss_A_base_nps)[-1] - 1) * 100]
 
-	cf_2_catch_sec_nps_ss[1:] = [ '%.1f' % elem for elem in cf_2_catch_sec_nps_ss[1:] ]
+	cf_2_catch_sec_nps_ss[1:] = [ '%.1f' % float(elem) for elem in cf_2_catch_sec_nps_ss[1:] ]
 	cf_2_catch_nps_ss.append(cf_2_catch_sec_nps_ss)
 
 	cf_2_catch_sec_nps = [sec,
@@ -1728,7 +1728,7 @@ for sec in ['agr', 'man', 'trd', 'fin', 'bss', 'nps']:
 				np.array([(np.array(AUT.h_tot)[-1]*(np.array(AUT_cf2_catch.A_tot_nps)[-1]/np.array(AUT.A_tot_nps)[-1]-1)*100 + np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2_catch.A_tot_nps)[-1]/np.array(DEU.A_tot_nps)[-1]-1)*100 + np.array(DNK.h_tot)[-1]*(np.array(DNK_cf2_catch.A_tot_nps)[-1]/np.array(DNK.A_tot_nps)[-1]-1)*100 + np.array(ESP.h_tot)[-1]*(np.array(ESP_cf2_catch.A_tot_nps)[-1]/np.array(ESP.A_tot_nps)[-1]-1)*100 + np.array(FIN.h_tot)[-1]*(np.array(FIN_cf2_catch.A_tot_nps)[-1]/np.array(FIN.A_tot_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2_catch.A_tot_nps)[-1]/np.array(FRA.A_tot_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2_catch.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100 + np.array(GRC.h_tot)[-1]*(np.array(GRC_cf2_catch.A_tot_nps)[-1]/np.array(GRC.A_tot_nps)[-1]-1)*100 + np.array(IRL.h_tot)[-1]*(np.array(IRL_cf2_catch.A_tot_nps)[-1]/np.array(IRL.A_tot_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2_catch.A_tot_nps)[-1]/np.array(ITA.A_tot_nps)[-1]-1)*100 + np.array(NLD.h_tot)[-1]*(np.array(NLD_cf2_catch.A_tot_nps)[-1]/np.array(NLD.A_tot_nps)[-1]-1)*100 + np.array(PRT.h_tot)[-1]*(np.array(PRT_cf2_catch.A_tot_nps)[-1]/np.array(PRT.A_tot_nps)[-1]-1)*100 + np.array(SWE.h_tot)[-1]*(np.array(SWE_cf2_catch.A_tot_nps)[-1]/np.array(SWE.A_tot_nps)[-1]-1)*100)/(EUR15_h_tot[-1]-np.array(BEL.h_tot)[-1]-np.array(LUX.h_tot)[-1])]),
 				(np.array(EU15_cf2_catch.A_tot_nps)[-1] / np.array(EU15.A_tot_nps)[-1] - 1) * 100]
 
-	cf_2_catch_sec_nps[1:] = [ '%.1f' % elem for elem in cf_2_catch_sec_nps[1:] ]
+	cf_2_catch_sec_nps[1:] = [ '%.1f' % float(elem) for elem in cf_2_catch_sec_nps[1:] ]
 	cf_2_catch_nps.append(cf_2_catch_sec_nps)
 
 	# save results
