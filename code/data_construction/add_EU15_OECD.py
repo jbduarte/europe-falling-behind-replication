@@ -59,7 +59,10 @@ data_comb['GDP'] = data_comb['Value'] * data_comb['H']
 data_comb = data_comb[data_comb.country != "USA"]
 
 # EU15 hours-weighted GDP-per-hour = sum(GDP) / sum(H) across member states.
-data_EU15 = data_comb.groupby(["year"]).agg(sum)
+# Sum only the numeric columns we need: pandas >=2.0 drops object columns from
+# .agg(sum) with a FutureWarning, and .agg({'GDP':'sum','H':'sum'}) was
+# silently changing the row count versus older versions.
+data_EU15 = data_comb.groupby(["year"])[['GDP', 'H']].sum()
 data_EU15["GDP_ph"] = data_EU15["GDP"] / data_EU15["H"]
 
 # Reload the OECD panel (raw copy, no filtering) and append EU15 as a new
