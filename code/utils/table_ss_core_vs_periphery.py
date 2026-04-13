@@ -35,7 +35,7 @@ data = data.reset_index()
 data = data[data.sector != "tot"]
 sector_filter = (data.sector != 'ser') & (data.sector != 'prs')
 data_total = data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'VA_Q']].groupby(
-    ["country", "year"]).aggregate(sum)
+    ["country", "year"]).aggregate("sum")
 data_total = data_total.reset_index()
 data_total.columns = ['country', 'year', 'VA', 'H', 'VA_Q']
 data_total['sector'] = "tot"
@@ -49,7 +49,7 @@ data = final_data.copy()
 data['y_l'] = (data['VA_Q'] / data['H']) * 100
 
 'US data'
-data_us = data.loc[data.country == 'USA']
+data_us = data.loc[data.country == 'USA'].copy()
 
 # EU Core = Germany, France, Benelux, Denmark. Definition follows the
 # Bayoumi-Eichengreen (1993) optimal-currency-area split repeated in the
@@ -58,8 +58,8 @@ data_us = data.loc[data.country == 'USA']
 tot_sector_filter = data.sector == "tot"
 EUCORE_countries = ['DE', "FR", "BE", "NL", "DK"]
 data_EUCORE = pd.DataFrame()
-data_EUCORE['H'] = data.loc[data.country.isin(EUCORE_countries), ["sector", "year", "H"]].groupby(["sector", "year"]).agg(sum)
-data_EUCORE['VA_Q'] = data.loc[data.country.isin(EUCORE_countries), ["sector", "year", "VA_Q"]].groupby(["sector", "year"]).agg(sum)
+data_EUCORE['H'] = data.loc[data.country.isin(EUCORE_countries), ["sector", "year", "H"]].groupby(["sector", "year"]).agg("sum")
+data_EUCORE['VA_Q'] = data.loc[data.country.isin(EUCORE_countries), ["sector", "year", "VA_Q"]].groupby(["sector", "year"]).agg("sum")
 data_EUCORE['y_l'] = data_EUCORE['VA_Q'] / data_EUCORE['H'] * 100
 data_eu_core = data_EUCORE.copy()
 data_eu_core = data_eu_core.reset_index()
@@ -70,8 +70,8 @@ data_eu_core = data_eu_core.reset_index()
 tot_sector_filter = data.sector == "tot"
 EUPERI_countries = ['EL', "IE", "PT", "ES", "IT", "GB"]
 data_EUPERI = pd.DataFrame()
-data_EUPERI['H'] = data.loc[data.country.isin(EUPERI_countries), ["sector", "year", "H"]].groupby(["sector", "year"]).agg(sum)
-data_EUPERI['VA_Q'] = data.loc[data.country.isin(EUPERI_countries), ["sector", "year", "VA_Q"]].groupby(["sector", "year"]).agg(sum)
+data_EUPERI['H'] = data.loc[data.country.isin(EUPERI_countries), ["sector", "year", "H"]].groupby(["sector", "year"]).agg("sum")
+data_EUPERI['VA_Q'] = data.loc[data.country.isin(EUPERI_countries), ["sector", "year", "VA_Q"]].groupby(["sector", "year"]).agg("sum")
 data_EUPERI['y_l'] = data_EUPERI['VA_Q'] / data_EUPERI['H'] * 100
 data_eu_peri = data_EUPERI.copy()
 data_eu_peri = data_eu_peri.reset_index()

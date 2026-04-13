@@ -81,11 +81,12 @@ The following files in `data/` are external inputs and must be obtained from the
 
 - **Software**: Python 3.8+ with a LaTeX installation (for figure text rendering via matplotlib)
 - **Packages**: See `requirements.txt`. Install with `pip install -r requirements.txt`
-- **Hardware**: 8 GB RAM recommended; endogenous trade model is computationally intensive
-- **Runtime** (tested on a MacBook Pro with Apple M2 Max and 64 GB RAM):
-  - **First run (cold cache): ~70 minutes.** Step 8 (endogenous trade calibration, `model_test_europe_endogenous_xn.py`) dominates at ~63 minutes; the remaining 18 steps take ~7 minutes combined.
-  - **Subsequent runs (warm cache): ~12 minutes.** Step 8 serialises its calibrated objects to `output/data/calibration_cache_endogenous.pkl` via dill; Step 9 (`trade_counterfactuals_endogenous.py`) detects the cache and skips the recalibration, cutting that stage to seconds. The cache is not committed to the repo, so a fresh clone always takes the full ~70 minutes on the first `python master.py` invocation.
-  - To force a full recalibration: delete `output/data/calibration_cache_endogenous.pkl` before running.
+- **Hardware**: 8 GB RAM recommended; endogenous-trade model is computationally intensive
+- **Runtime** on modern Apple Silicon (M2 Max or newer, 16 GB+ RAM):
+  - ~7 minutes end-to-end on Python 3.11 with pandas 2.x.
+  - ~12 minutes end-to-end on Python 3.8 with pandas 1.5 (older interpreter + older groupby/merge paths).
+  - Step 8 (endogenous-trade calibration, `model_test_europe_endogenous_xn.py`) dominates wall time. Runtime on older hardware may be substantially longer.
+- Step 8 serialises its calibrated objects to `output/data/calibration_cache_endogenous.pkl` via dill; Step 9 detects the cache and skips the recalibration on subsequent runs, but the speedup is modest (order of seconds) because the full pipeline is already fast. To force a full recalibration, delete the cache file before running.
 - **OS**: Tested on macOS; should work on Linux and Windows
 
 ## Instructions

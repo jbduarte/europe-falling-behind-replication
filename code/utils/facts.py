@@ -170,9 +170,9 @@ LS_18 = np.empty((2, len(sectors)))
 for i in range(2):
     for k, sector in enumerate(sectors):
         LS_95[i, k] = countries_fulldata[i].loc[(countries_fulldata[i].sector == sector)
-                                                & (countries_fulldata[i].year == 1995), 'LS']
+                                                & (countries_fulldata[i].year == 1995), 'LS'].iloc[0]
         LS_18[i, k] = countries_fulldata[i].loc[(countries_fulldata[i].sector == sector)
-                                                & (countries_fulldata[i].year == 2018), 'LS']
+                                                & (countries_fulldata[i].year == 2018), 'LS'].iloc[0]
 LS_data_95 = pd.DataFrame(LS_95[:, :-1], index=['US', 'EU-15'], columns=sectors[:-1])
 LS_data_18 = pd.DataFrame(LS_18[:, :-1], index=['US', 'EU-15'], columns=sectors[:-1])
 
@@ -182,9 +182,9 @@ ai_18 = np.empty((2, len(sectors)))
 for i in range(2):
     for k, sector in enumerate(sectors):
         ai_95[i, k] = countries_fulldata[i].loc[(countries_fulldata[i].sector == sector)
-                                                & (countries_fulldata[i].year == 1995), 'L_PROD_normalized']
+                                                & (countries_fulldata[i].year == 1995), 'L_PROD_normalized'].iloc[0]
         ai_18[i, k] = countries_fulldata[i].loc[(countries_fulldata[i].sector == sector)
-                                                & (countries_fulldata[i].year == 2018), 'L_PROD_normalized']
+                                                & (countries_fulldata[i].year == 2018), 'L_PROD_normalized'].iloc[0]
 ai_data_95 = pd.DataFrame(ai_95, index=['US', 'EU-15'], columns=sectors)
 ai_data_18 = pd.DataFrame(ai_18, index=['US', 'EU-15'], columns=sectors)
 

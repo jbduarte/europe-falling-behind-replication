@@ -37,7 +37,7 @@ data = data.reset_index()
 data = data[data.sector != "tot"]
 sector_filter = (data.sector != 'ser') & (data.sector != 'prs')
 data_total = data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'VA_Q']].groupby(
-    ["country", "year"]).aggregate(sum)
+    ["country", "year"]).aggregate("sum")
 data_total = data_total.reset_index()
 data_total.columns = ['country', 'year', 'VA', 'H', 'VA_Q']
 data_total['sector'] = "tot"
@@ -52,7 +52,7 @@ data = final_data.copy()
 data['y_l'] = (data['VA_Q'] / data['H']) * 100
 
 # --- Country-level slices ---
-data_us = data.loc[data.country == 'USA']
+data_us = data.loc[data.country == 'USA'].copy()
 
 # Build the EU4 aggregate by summing hours and real VA across DE+FR+IT+GB,
 # then re-deriving y_l on the totals. Aggregating the underlying inputs
@@ -61,8 +61,8 @@ data_us = data.loc[data.country == 'USA']
 tot_sector_filter = data.sector == "tot"
 EU4_countries = ['DE', "FR", "IT", "GB"]
 data_EU4 = pd.DataFrame()
-data_EU4['H'] = data.loc[data.country.isin(EU4_countries), ["sector", "year", "H"]].groupby(["sector", "year"]).agg(sum)
-data_EU4['VA_Q'] = data.loc[data.country.isin(EU4_countries), ["sector", "year", "VA_Q"]].groupby(["sector", "year"]).agg(sum)
+data_EU4['H'] = data.loc[data.country.isin(EU4_countries), ["sector", "year", "H"]].groupby(["sector", "year"]).agg("sum")
+data_EU4['VA_Q'] = data.loc[data.country.isin(EU4_countries), ["sector", "year", "VA_Q"]].groupby(["sector", "year"]).agg("sum")
 data_EU4['y_l'] = data_EU4['VA_Q'] / data_EU4['H'] * 100
 data_eu = data_EU4.copy()
 data_eu = data_eu.reset_index()

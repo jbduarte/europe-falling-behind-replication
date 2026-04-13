@@ -35,7 +35,7 @@ data = data.reset_index()
 data = data[data.sector != "tot"]
 sector_filter = (data.sector != 'ser') & (data.sector != 'prs')
 data_total = data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'VA_Q']].groupby(
-    ["country", "year"]).aggregate(sum)
+    ["country", "year"]).aggregate("sum")
 data_total = data_total.reset_index()
 data_total.columns = ['country', 'year', 'VA', 'H', 'VA_Q']
 data_total['sector'] = "tot"
@@ -52,9 +52,9 @@ data['y_l'] = (data['VA_Q'] / data['H']) * 100
 # Country slices. 'EU15' is the EUKLEMS pre-aggregated region (15 pre-2004
 # member states); 'GB' is reported separately because Brexit motivates a
 # UK-only robustness column.
-data_us = data.loc[data.country == 'USA']
-data_eu = data.loc[data.country == 'EU15']
-data_gbr = data.loc[data.country == 'GB']
+data_us = data.loc[data.country == 'USA'].copy()
+data_eu = data.loc[data.country == 'EU15'].copy()
+data_gbr = data.loc[data.country == 'GB'].copy()
 
 # Compute emp. shares
 

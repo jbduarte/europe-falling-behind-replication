@@ -225,7 +225,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
 
             # # compute Total
             # data_total = final_data.loc[:, ['country', 'year', 'VA', 'H', 'VA_Q']].groupby(
-            #     ["country", "year"]).aggregate(sum)
+            #     ["country", "year"]).aggregate("sum")
             # data_total = data_total.reset_index()
             # data_total.columns = ['country', 'year', 'VA', 'H', 'VA_Q']
             # data_total['sector'] = "tot"
@@ -238,7 +238,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
             sector_filter = (final_data.sector != 'agr') & (final_data.sector != 'man') & (final_data.sector != 'tot')
             final_data['VA_services'] = final_data.loc[sector_filter].groupby(['country', 'year'])['VA_Q'].transform('sum')
 
-            data_services = final_data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'VA_Q']].groupby(["country", "year"]).aggregate(sum)
+            data_services = final_data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'VA_Q']].groupby(["country", "year"]).aggregate("sum")
             data_services = data_services.reset_index()
             data_services.columns = ['country', 'year', 'VA', 'H', 'VA_Q']
             data_services['sector'] = "ser"
@@ -253,7 +253,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
                 'sum')
 
             data_services = final_data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'VA_Q']].groupby(
-                ["country", "year"]).aggregate(sum)
+                ["country", "year"]).aggregate("sum")
             data_services = data_services.reset_index()
             data_services.columns = ['country', 'year', 'VA', 'H', 'VA_Q']
             data_services['sector'] = "prs"
@@ -431,7 +431,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         # final_data['P_ws'] = final_data['P'] * final_data['ws']
         #
         # data_total = final_data.loc[:, ['country', 'year', 'VA', 'H', 'P_ws']].groupby(
-        #     ["country", "year"]).aggregate(sum)
+        #     ["country", "year"]).aggregate("sum")
         # data_total = data_total.reset_index()
         # data_total.columns = ['country', 'year', 'VA', 'H', 'P']
         # data_total['sector'] = "tot"
@@ -446,7 +446,7 @@ def select_data(countries=("US", "EU15", "AT", "BE", "DK", "FI", "FR", "DE", "GR
         final_data['ws'] = final_data['VA'] / final_data['VA_services']
         final_data['P_ws'] = final_data['P'] * final_data['ws']
 
-        data_services = final_data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'P_ws']].groupby(["country", "year"]).aggregate(sum)
+        data_services = final_data.loc[sector_filter, ['country', 'year', 'VA', 'H', 'P_ws']].groupby(["country", "year"]).aggregate("sum")
         data_services = data_services.reset_index()
         data_services.columns = ['country', 'year', 'VA', 'H', 'P']
         data_services['sector'] = "ser"
