@@ -1120,10 +1120,6 @@ plt.title('Non-Progressive', fontsize=16)
 plt.plot(ax.get_xlim(), ax.get_xlim(), ls="-", c=".3")
 plt.xlabel('Data', fontsize=10)
 plt.ylabel('Model', fontsize=10)
-#plt.xticks([0.30, 0.40, 0.50],fontsize=10)
-#plt.yticks([0.30, 0.40, 0.50],fontsize=10)
-
-
 fig.legend(handles, labels, loc=9, bbox_to_anchor=(0.5, 0.02), ncol=2, fontsize=14)
 plt.tight_layout()
 #plt.savefig('../output/figures/fig_test.pdf', bbox_inches="tight")

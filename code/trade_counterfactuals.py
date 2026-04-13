@@ -1601,39 +1601,3 @@ ss=np.array([(np.array(DEU.h_tot)[-1]*(E_USA[-1]/np.array(DEU_cf2_catch.ss_A_bas
 ss_base=np.array([(np.array(DEU.h_tot)[-1]*(E_USA[-1]/np.array(DEU_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(E_USA[-1]/np.array(FRA_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(E_USA[-1]/np.array(GBR_cf2_catch.ss_A_base_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(E_USA[-1]/np.array(ITA_cf2_catch.ss_A_base_nps)[-1]-1)*100)/EUR4_h_tot[-1]])
 cf=np.array([(np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2_catch.A_tot_nps)[-1]/np.array(DEU.A_tot_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2_catch.A_tot_nps)[-1]/np.array(FRA.A_tot_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2_catch.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2_catch.A_tot_nps)[-1]/np.array(ITA.A_tot_nps)[-1]-1)*100)/EUR4_h_tot[-1]])
 cf_base=np.array([(np.array(DEU.h_tot)[-1]*(np.array(DEU_cf2_catch.A_tot_nps)[-1]/np.array(DEU.A_tot_nps)[-1]-1)*100 + np.array(FRA.h_tot)[-1]*(np.array(FRA_cf2_catch.A_tot_nps)[-1]/np.array(FRA.A_tot_nps)[-1]-1)*100 + np.array(GBR.h_tot)[-1]*(np.array(GBR_cf2_catch.A_tot_nps)[-1]/np.array(GBR.A_tot_nps)[-1]-1)*100 + np.array(ITA.h_tot)[-1]*(np.array(ITA_cf2_catch.A_tot_nps)[-1]/np.array(ITA.A_tot_nps)[-1]-1)*100)/EUR4_h_tot[-1]])
-
-"""
-
-L = (DEU.om_agr_nps*(C**eps_agr)*(A_agr**(sigma - 1)) + (E**(1-sigma))*nx_agr_E +
- DEU.om_man_nps*C*(A_man**(sigma - 1)) + (E**(1-sigma))*nx_man_E +
- DEU.om_trd_nps*(C**eps_trd)*(A_trd**(sigma - 1)) + (E**(1-sigma))*nx_trd_E +
- DEU.om_bss_nps*(C**eps_bss)*(A_bss**(sigma - 1)) + (E**(1-sigma))*nx_bss_E +
- DEU.om_fin_nps*(C**eps_fin)*(A_fin**(sigma - 1)) + (E**(1-sigma))*nx_fin_E +
-(1-DEU.om_agr_nps-DEU.om_man_nps-DEU.om_trd_nps-DEU.om_bss_nps-DEU.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + (E**(1-sigma))*nx_nps_E)
-
-
-share_agr = (DEU.om_agr_nps*(C**eps_agr)*(A_agr**(sigma - 1)) + E**(1-sigma)*nx_agr_E)/L
-share_man = (DEU.om_man_nps*C*(A_man**(sigma - 1)) + E**(1-sigma)*nx_man_E)/L
-share_trd = (DEU.om_trd_nps*(C**eps_trd)*(A_trd**(sigma - 1)) + E**(1-sigma)*nx_trd_E)/L
-share_bss = (DEU.om_bss_nps*(C**eps_bss)*(A_bss**(sigma - 1)) + E**(1-sigma)*nx_bss_E)/L
-share_fin = (DEU.om_fin_nps*(C**eps_fin)*(A_fin**(sigma - 1)) + E**(1-sigma)*nx_fin_E)/L
-share_nps = ((1-DEU.om_agr_nps-DEU.om_man_nps-DEU.om_trd_nps-DEU.om_bss_nps-DEU.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
-
-
-L = (DEU.om_agr_nps*(C**eps_agr)*(A_agr**(sigma - 1)) + (E**(1-sigma))*nx_agr_cf +
- DEU.om_man_nps*C*(A_man**(sigma - 1)) + (E**(1-sigma))*nx_man_E +
- DEU.om_trd_nps*(C**eps_trd)*(A_trd**(sigma - 1)) + (E**(1-sigma))*nx_trd_E +
- DEU.om_bss_nps*(C**eps_bss)*(A_bss**(sigma - 1)) + (E**(1-sigma))*nx_bss_E +
- DEU.om_fin_nps*(C**eps_fin)*(A_fin**(sigma - 1)) + (E**(1-sigma))*nx_fin_E +
-(1-DEU.om_agr_nps-DEU.om_man_nps-DEU.om_trd_nps-DEU.om_bss_nps-DEU.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + (E**(1-sigma))*nx_nps_E)
-
-
-share_agr = (DEU.om_agr_nps*(C**eps_agr)*(A_agr**(sigma - 1)) + E**(1-sigma)*nx_agr_cf)/L
-share_man = (DEU.om_man_nps*C*(A_man**(sigma - 1)) + E**(1-sigma)*nx_man_E)/L
-share_trd = (DEU.om_trd_nps*(C**eps_trd)*(A_trd**(sigma - 1)) + E**(1-sigma)*nx_trd_E)/L
-share_bss = (DEU.om_bss_nps*(C**eps_bss)*(A_bss**(sigma - 1)) + E**(1-sigma)*nx_bss_E)/L
-share_fin = (DEU.om_fin_nps*(C**eps_fin)*(A_fin**(sigma - 1)) + E**(1-sigma)*nx_fin_E)/L
-share_nps = ((1-DEU.om_agr_nps-DEU.om_man_nps-DEU.om_trd_nps-DEU.om_bss_nps-DEU.om_fin_nps)*(C**eps_nps)*(A_nps**(sigma - 1)) + E**(1-sigma)*nx_nps_E)/L
-
-x = (share_agr*A_agr + share_man*A_man + share_trd*A_trd + share_bss*A_fin + share_fin*A_bss + share_nps*A_nps)
-"""
