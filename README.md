@@ -33,7 +33,11 @@ All data used in the analysis are included in the `data/` folder. Original sourc
 | Penn World Table | [PWT 10.01](https://www.rug.nl/ggdc/productivity/pwt/) | GDP levels for initial relative productivity |
 | OECD IO Tables | [OECD](https://www.oecd.org/sti/ind/input-outputtables.htm) | Sectoral trade flows (IO panel) |
 
-**Note**: The TFP correlation analysis (Step 18) requires `growth_accounts.csv` (~180 MB), included in `data/raw_data/`. If cloning from GitHub where this file may be tracked via Git LFS, ensure LFS is installed (`git lfs install`) before cloning.
+**Note on `growth_accounts.csv`**: The TFP correlation analysis (Step 18, Table 4) requires `data/raw_data/growth accounts.csv` (~180 MB). This file is **not distributed through this GitHub repository** because it exceeds GitHub's per-file size limit and LFS is not configured. Two ways to obtain it:
+- Download the EU KLEMS 2023 Growth Accounts release directly from https://euklems-intanprod-llee.luiss.it/ and place the file at `data/raw_data/growth accounts.csv`.
+- The Mendeley Data replication package that accompanies the published paper includes this file.
+
+If the file is missing, `master.py` runs all 19 steps but Step 18 is skipped gracefully; the rest of the paper's figures and tables are produced normally.
 
 ## Reproducing `data/` from Raw Sources
 
