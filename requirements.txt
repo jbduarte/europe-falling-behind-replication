@@ -7,3 +7,4 @@ openpyxl>=3.0
 scikit-learn>=1.0
 dill>=0.3
 country_converter>=0.7
+jinja2>=3.0
